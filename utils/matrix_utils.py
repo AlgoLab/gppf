@@ -1,4 +1,4 @@
-def import_matrix_tab(file_path):
+def import_matrix_tab(file_path, type, k_model):
 	if '.sim' in file_path:
 		with open(file_path, 'r') as f_in:
 			first_line = f_in.readline()[:-2]
@@ -27,7 +27,14 @@ def import_matrix_tab(file_path):
 			if ',' in mut:
 				mut = mut.split(',')[0]
 			names.append(mut)
-			names.append(mut + '-')
+			if type == 'persistent':
+				names.append(mut + '-')
+			elif type == 'dollo':
+				for i in range(k_model):
+					names.append(mut + '-{0}'.format(i+1))
+			elif type == 'caminsokal':
+				for i in range(k_model-1):
+					names.append(mut + '+{0}'.format(i+1))
 
 			i = 0
 			while i < len(row):

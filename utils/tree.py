@@ -74,17 +74,6 @@ def contains(col1, col2):
 			return False
 	return True
 
-# def identify_clones(matrix, names, mut_nod):
-# 	clones = []
-# 	for i in range(len(matrix)):
-# 		c = []
-# 		for j in range(len(matrix[0])):
-# 			if matrix[i][j] == 1:
-# 				c.append(mut_nod[names[j]])
-# 		clones.append(c)
-# 	return clones
-
-
 def build_tree(matrix, names, usage, output_file):
 	global f_out
 	if not output_file == 'random':
