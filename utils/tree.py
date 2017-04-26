@@ -2,7 +2,7 @@
 import sys, os, random
 import numpy as np
 
-f_out = None
+f_app = None
 
 hash_clone = {}
 
@@ -12,7 +12,6 @@ class Node:
 		self.parent = parent
 		self.children = []
 		self.binary = []
-		# print(mut)
 		if parent:
 			parent.children.append(self)
 			self.binary = list(self.parent.binary)
@@ -23,14 +22,11 @@ class Node:
 		else:
 			for i in range(mut):
 				self.binary.append(0)
-		# print(self.binary)
 
 	def print_node(self):
 		if not self.parent == None:
-			print('"%s" -- "%s" [penwidth=3];' % (self.parent.name, self.name))
-			global f_out
-			if f_out:
-				f_out.write('"%s" -- "%s" [penwidth=3];\n' % (self.parent.name, self.name))
+			global f_app
+			f_app.write('\t"%s" -- "%s";\n' % (self.parent.name, self.name))	
 
 
 def print_tree(node):
@@ -41,30 +37,10 @@ def print_tree(node):
 		for child in node.children:
 			print_tree(child)
 
-def print_dot_tree(node, usage_matrix, names, clones, usage_tree=True):
-	print('graph phylogeny {')
-	f_out.write('graph phylogeny {\n')
+def print_dot_tree(node, usage_matrix, names, clones):
+	f_app.write('graph phylogeny {\n')
 	print_tree(node)
-
-	if usage_tree:
-		for i in range(len(usage_matrix)):
-			# Randomize color and create sample node
-			r = lambda: random.randint(25,255)
-			color = '#%2X%2X%2X' % (r(),r(),r())
-			f_out.write('{{ rank=sink; "Sample {0}" [shape=box color="{1}" fontcolor="{1}"]; }}\n'.format(i+1, color))
-
-			for j in range(len(usage_matrix[0])):
-				if usage_matrix[i][j] > 0:
-					clone = clones[j]
-					key = ''.join(str(e) for e in clone)
-					global hash_clone
-					c = hash_clone[key]
-					f_out.write('"Sample {0}" -- "{1}" [label="{2:.4f}" color="{3}" fontcolor="{3}"];\n'
-								.format(i+1, c.name, 
-								usage_matrix[i][j], color))
-
-	f_out.write('}\n')
-	print('}')
+	f_app.write('}\n')
 
 # True if col1 contains col2
 def contains(col1, col2):
@@ -73,10 +49,9 @@ def contains(col1, col2):
 			return False
 	return True
 
-def build_tree(matrix, names, usage, output_file):
-	global f_out
-	if not output_file == 'random':
-		f_out = open(output_file, 'w+')
+def build_tree(matrix, names, usage, append_file):
+	global f_app
+	f_app = append_file
 	rows = len(matrix)
 	cols = len(matrix[0])
 
@@ -92,7 +67,7 @@ def build_tree(matrix, names, usage, output_file):
 	# REMEMBER:
 	# get the i-th columk with matrix[:,i]
 
-	root = Node('root', None, cols)
+	root = Node('germline', None, cols)
 
 	driver_mut = Node(mutations_name[-1], root, indeces[-1])
 
@@ -118,7 +93,5 @@ def build_tree(matrix, names, usage, output_file):
 			mut_nod[mutations_name[i]] = node				
 		i -=1
 
-	if not output_file == 'random':
-		# identified_clones = identify_clones(matrix, names, mut_nod)
-		print_dot_tree(root, usage, names, matrix)
+	print_dot_tree(root, usage, names, matrix)
 	return root, mut_nod

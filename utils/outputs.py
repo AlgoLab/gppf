@@ -110,7 +110,7 @@ def print_solution(num_clones, num_samples, num_mutations, start_optimize,
 	if args.model == 'persistent' and args.k == num_mutations:
 		args.model = 'persistent_full'
 		args.k = 'full'
-	f_out = open('res_{}.csv'.format(args.model), 'w+')
+	f_out = open('res_{}.txt'.format(matrix_name), 'w+')
 	if model.status == GRB.Status.OPTIMAL or model.status == GRB.Status.TIME_LIMIT:		
 		final_error = 0
 
@@ -220,10 +220,8 @@ def print_solution(num_clones, num_samples, num_mutations, start_optimize,
 		f_out.write('Error matrix:\n')
 		print_lmatrix(error_matrix, f_out)
 
-		f_out.write('Tree in DOT code: \n\tRefer to {0}_complete.tree '+
-				'for a complete tree with clone proportions in samples:\n'.format(
-					matrix_name))
-		build_tree(np.array(extended_matrix), mutation_names, np.array(usage_matrix), matrix_name + '_complete.tree')
+		f_out.write('Tree in DOT code: \n\n')
+		build_tree(np.array(extended_matrix), mutation_names, np.array(usage_matrix), f_out)
 	else:
 		f_out.write('Elapsed time: {0} sec\n'.format(	
 					(datetime.now() - start_optimize).total_seconds()))
