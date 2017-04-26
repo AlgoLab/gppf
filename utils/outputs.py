@@ -16,9 +16,9 @@ def check_file_existance(path):
 def print_exp_solution(num_clones, num_samples, num_mutations, start_optimize, 
 							args, model, u, x, input_matrix, matrix_name):
 	if args.model == 'dollo' and args.k == 0:
-		args.model == 'perfect'
-	if args.model == 'perfect' and args.k == num_mutations:
-		args.model == 'perfect_full'
+		args.model = 'perfect'
+	if args.model == 'persistent' and args.k == num_mutations:
+		args.model = 'persistent_full'
 	f_out = check_file_existance('res_exp_{}.csv'.format(args.model))
 	
 	if model.status == GRB.Status.OPTIMAL or model.status == GRB.Status.TIME_LIMIT:
@@ -192,8 +192,8 @@ def print_solution(num_clones, num_samples, num_mutations, start_optimize,
 			error_matrix.append(row)
 			s += 1  
 
-		test_matrix = np.dot(usage_matrix, clone_matrix)
-		diff = input_matrix - test_matrix
+		inferred_matrix = np.dot(usage_matrix, clone_matrix)
+		diff = input_matrix - inferred_matrix
 		for i in range(num_samples):
 			for j in range(num_mutations):
 				final_error += abs(diff[i][j])
@@ -204,9 +204,9 @@ def print_solution(num_clones, num_samples, num_mutations, start_optimize,
 					(datetime.now() - start_optimize).total_seconds()))
 		f_out.write('Input name: {0}\nNumber of samples: {1}\n'.format(
 					matrix_name, num_samples))
-		f_out.write('Number of mutations: {0}\nClone limit:{1}\n'.format(
+		f_out.write('Number of mutations: {0}\nClone limit: {1}\n'.format(
 					num_mutations, args.clones))
-		f_out.write('Total clone used: {0}\nModel (k): {1} ({2})'.format(
+		f_out.write('Total clone used: {0}\nModel (k): {1} ({2})\n'.format(
 				len(clone_used), args.model, args.k))
 		f_out.write('Total error: {0}\nSolution accuracy: {1}\n'.format(
 				final_error, test_accuracy))
@@ -219,8 +219,9 @@ def print_solution(num_clones, num_samples, num_mutations, start_optimize,
 			print_lmatrix(extended_matrix, f_out)
 		f_out.write('Error matrix:\n')
 		print_lmatrix(error_matrix, f_out)
-
-		f_out.write('Tree in DOT code: \n\n')
+		f_out.write('Inferred matrix F:\n')
+		print_lmatrix(inferred_matrix, f_out)
+		f_out.write('Tree in DOT code:\n')
 		build_tree(np.array(extended_matrix), mutation_names, np.array(usage_matrix), f_out)
 	else:
 		f_out.write('Elapsed time: {0} sec\n'.format(	

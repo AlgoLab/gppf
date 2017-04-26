@@ -8,11 +8,6 @@ gppf
 Start the program with:
 `still have to do it`
 
-Models (/models)
---------------
-Inside this folder are presents the versions of the model that ouptputs all the 
-relevant informations regarding the Clonal matrix, the Usage matrix,
-the Error matrix and also prints a tree of the solution in **DOT code**.
 
 Test versions (/test_versions)
 ------------------------------

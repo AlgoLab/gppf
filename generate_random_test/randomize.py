@@ -37,7 +37,7 @@ def import_hudson(path):
 		i += 1
 
 	npbase = np.array(base)
-	for i in range(50):
+	for i in range(len(matrix[0])*0.4):
 		npbase[np.random.randint(0,20)][np.random.randint(0,10)] = 1
 
 
