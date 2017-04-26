@@ -52,16 +52,17 @@ def print_lmatrix(lmatrix, file_out=None):
 		row = ''
 		for c in i:
 			row += str(c) + ' '
-		print(row)
-		if file_out != None:
+		if file_out:
 			file_out.write(row + '\n')
+		else:
+			print(row)
 
-def print_lmatrix_accuracy(lmatrix, file_out=None):
-	for i in lmatrix:
-		row = ''
-		for c in i:
-			row += str(c)
-		print(row)
-		if file_out != None:
-			file_out.write(row + '\n')
+# def print_lmatrix_accuracy(lmatrix, file_out=None):
+# 	for i in lmatrix:
+# 		row = ''
+# 		for c in i:
+# 			row += str(c)
+# 		print(row)
+# 		if file_out != None:
+# 			file_out.write(row + '\n')
 	

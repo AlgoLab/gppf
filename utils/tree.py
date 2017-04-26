@@ -47,7 +47,6 @@ def print_dot_tree(node, usage_matrix, names, clones, usage_tree=True):
 	print_tree(node)
 
 	if usage_tree:
-
 		for i in range(len(usage_matrix)):
 			# Randomize color and create sample node
 			r = lambda: random.randint(25,255)

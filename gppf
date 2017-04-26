@@ -8,7 +8,6 @@ import argparse
 sys.path.append(os.path.abspath(os.getcwd() + '/utils'))
 from matrix_utils import *
 from outputs import *
-from tree import *
 
 #==================================================================#
 #========================= PREREQUISITES ==========================#
@@ -335,28 +334,7 @@ elif args.model == 'dollo':
 			m += 1
 		c += 1
 
-	#B constraint
-	c = 0
-	while c < num_clones:
-		p = 0
-		while p < (args.k+1)*num_mutations:
-			if p % (args.k+1) == 0:
-				q = p + args.k + 1
-			else:
-				q = p + 1
-			while q < (args.k+1)*num_mutations:
-				model.addConstr(
-					y[c, p] + y[c, q] - B[p, q, 1, 1] <= 1, 
-					'B[{0},{1},1,1]_{2}'.format(p,q,c))
-				model.addConstr(
-					- y[c, p] + y[c, q] - B[p, q, 0, 1] <= 0, 
-					'B[{0},{1},0,1]_{2}'.format(p,q,c))
-				model.addConstr(
-					y[c, p] - y[c, q] - B[p, q, 1, 0] <= 0, 
-					'B[{0},{1},1,0]_{2}'.format(p,q,c))
-				q += 1
-			p += 1	
-		c += 1
+	
 
 	#No conflicts constraint
 	p = 0
@@ -415,6 +393,7 @@ elif args.model == 'caminsokal':
 			q += 1
 		p += 1	
 
+
 print('#----- GUROBI OPTIMIZATION ----#')
 start_optimize = datetime.now()
 model.optimize()
@@ -422,6 +401,9 @@ model.optimize()
 #==================================================================#
 #======================= POST OPTIMIZATION ========================#
 #==================================================================#
-
-print_exp_solution(num_clones, num_samples, num_mutations,
-	start_optimize, args, model, u, x, input_matrix, matrix_name)
+if args.exp:
+	print_exp_solution(num_clones, num_samples, num_mutations,
+		start_optimize, args, model, u, x, input_matrix, matrix_name)
+else:
+	print_solution(num_clones, num_samples, num_mutations,
+		start_optimize, args, model, u, x, y, error, input_matrix, matrix_name, mutation_names)

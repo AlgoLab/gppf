@@ -3,6 +3,7 @@
 gurobi.log
 utils/*.pyc
 res_*.csv
+*.tree
 
 # OS generated files #
 ######################
