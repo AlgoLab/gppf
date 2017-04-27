@@ -1,8 +1,6 @@
 General Parsimony Phylogeny models from Frequencies
 ===================================================
 
-REFERENCE TO THE PAPER
-
 gppf
 -------
 Start the program with:<br>
