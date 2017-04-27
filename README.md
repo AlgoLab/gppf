@@ -41,16 +41,18 @@ and with a experimental-format output.
 Input format
 ----------------
 **gppf** accept to different input format:
-- The [simulated format](data/simulated/n10_m20/0.sim), for file of extension `.sim` (required), is a frequency matrix F of tab separated values. The first line is a dummy line of mutation names.
+- The [simulated data format](data/simulated/n10_m20/0.sim), for file of extension `.sim` (required), is a frequency matrix F of tab separated values. The first line is a dummy line of mutation names.
 
-	| Mut_0		Mut_0-	Mut_1	Mut_1-	Mut_2	Mut_2- |
-	---------------------------------------------------
-	| 0.3849	0.0000	0.3849	0.3271	0.3271	0.1661 |	
-	| 0.4577	0.0000	0.4577	0.2598	0.2598	0.0000 |	
-	| 0.3904	0.0000	0.3904	0.2582	0.2582	0.1561 |	
-	| 0.1416	0.0000	0.1416	0.1416	0.1416	0.0000 |	
-	| 0.5114	0.0000	0.5114	0.3046	0.3046	0.1853 |	
-	
+	| Mut_0	 |	Mut_0- | Mut_1  | Mut_1- |	Mut_2  | Mut_2- |
+	|--------|---------|--------|--------|---------|--------|
+	| 0.4584 |	0.0000 | 0.0970 | 0.0000 |	0.1630 | 0.1630 |
+	| 0.6222 |	0.2443 | 0.1420	| 0.2443 |	0.1073 | 0.1073 |
+	| 0.6450 |	0.1400 | 0.1539	| 0.1400 |	0.1270 | 0.1270 |
+	| 0.6110 |	0.0805 | 0.0838	| 0.0805 |	0.0794 | 0.0794 |
+	| 0.6930 |	0.1108 | 0.0920	| 0.1108 |	0.0792 | 0.0792 |
+
+- The [real data format](data/real/CLL077_deep.tx) is a format were the input is a tab-separated text file. The first line contains the sample names. The first column contains mutations ids. The consecutive pair of columns contains read counts
+for reference and mutated alleles.
 
 Detailed-format Output
 -----------------
