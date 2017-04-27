@@ -1,4 +1,4 @@
-Elapsed time:  sec
+Elapsed time: 272678 sec
 Input name: cll077_deep
 Number of samples: 5
 Number of mutations: 16
