@@ -8,13 +8,13 @@ To run `gppf` are required:
 - **Gurobi** 6.5.2 +
 
 To reproduce experiments described in the paper the following are also required:
-- **R** 3.3.3 + with packages:
-	- ggplot2
-	- grid
-	- plyr
-	- readr 
+- **R** 3.3.3 with packages:
+	- *ggplot2*
+	- *grid*
+	- *plyr*
+	- *readr*
 
-For generating samples is required
+For generating samples:
 - **ms** by Hudson
 
 
