@@ -1,6 +1,23 @@
 General Parsimony Phylogeny models from Frequencies
 ===================================================
 
+Requirements
+-------------
+To run `gppf` are required:
+- **Python** 2.7.12 +
+- **Gurobi** 6.5.2 +
+
+To reproduce experiments described in the paper the following are also required:
+- **R** 3.3.3 + with packages:
+	- ggplot2
+	- grid
+	- plyr
+	- readr 
+
+For generating samples is required
+- **ms** by Hudson
+
+
 gppf
 -------
 Start the program with:<br>
@@ -90,10 +107,13 @@ clone_used, k, time, total_error, accuracy`
 
 We can see as an example the Dollo(2) output of [Exp.2](experimental_results/simulated/exp2/dollo.csv)
 
-To start the experiments described if the paper run the bash files `start_exp1.sh` and `start_exp2.sh`
+Recreating experiments
+-----------------------
+To start the experiments described in the paper run the bash files `start_exp1.sh` and `start_exp2.sh`
 note that this experiments can be easily parallelized by separating the `for` cycles in different files
-or sessions. 
-
+or sessions. The bash files also recreate the plot and the table present in the paper by running programs
+`plot_from_csv.R` and `make_table.py`, the last two programs require the output file of `gppf` to be in 
+the root directory, (as default)
 
 
 

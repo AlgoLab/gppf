@@ -1,6 +1,6 @@
 #/bin/bash
 # Start Exp.1 described in the paper
-# This experiment could, obviously, be parallelized
+# This experiment could (and should) be parallelized
 
 clones=( 1 0.8 0.6 0.4 )
 for c in "${clones[@]}"
@@ -14,3 +14,5 @@ do
 	done
 done
 
+Rscript plot_from_csv.R
+./make_table.py 1 > table_exp1.txt
