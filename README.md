@@ -66,7 +66,7 @@ Input format
 	| 0.6110 |	0.0805 | 0.0838	| 0.0805 |	0.0794 | 0.0794 |
 	| 0.6930 |	0.1108 | 0.0920	| 0.1108 |	0.0792 | 0.0792 |
 
-- The [real data format](data/real/CLL077_deep.txt) is a format were the input is a tab-separated text file. The first line contains the sample names. The first column contains mutations ids. The consecutive pair of columns contains read counts
+- The [real data format](data/real/cll077_deep.txt) is a format were the input is a tab-separated text file. The first line contains the sample names. The first column contains mutations ids. The consecutive pair of columns contains read counts
 for reference and mutated alleles.
 
 Detailed-format Output

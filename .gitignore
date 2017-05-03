@@ -2,9 +2,6 @@
 ######################
 gurobi.log
 utils/*.pyc
-#res_*.csv
-#res_*.txt
-#*.tree
 
 # OS generated files #
 ######################
