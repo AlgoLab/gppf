@@ -161,7 +161,7 @@ def print_solution(num_clones, num_samples, num_mutations, start_optimize,
 			usage_matrix.append(row)
 			s +=1
 
-		if args.model == 'persistent':
+		if args.model in ('persistent', 'persistent_full'):
 			k_model = 2
 		elif args.model == 'dollo':
 			k_model = args.k + 1
