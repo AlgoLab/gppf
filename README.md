@@ -26,7 +26,7 @@ Start the program with:<br>
 Where: 
 
 `-m(--model) {perfect,persistent,dollo,caminsokal}`
-Is a required arguments to specify to the phylogent model
+is a required arguments to specify to the phylogeny model
 
 
 `-f(--file) FILE` Specifies the path of the input file.
@@ -34,14 +34,14 @@ Is a required arguments to specify to the phylogent model
 
 `-k K` Specifies the **k**-value of the selected model. 
 (Persistent(k), Dollo(k),Camin-Sokal(k))
-- For a peristent model without restriction, type `-k full`. 
-- Do not specify any **k** value for Perfect model, if specified it will be ignored.
+- For a persistent model without restrictions, use `-k full`. 
+- Do not specify any **k** for Perfect Pyholgeny model. If specified it will be ignored.
 
 
 `-t(--time) TIME` Specifies the maximum time allowed for the computation. 
 Type `-t 0` to not impose a limit.
 
-`-c(--clones) CLONES` Specifies the percentage of clones allowed. Eg `-c 0.8`.
+`-c(--clones) CLONES` Specifies the number of clones allowed, expressed as a fraction of the input mutations. Eg `-c 0.8`.
 The actual amount of maximum clones used is calculated by : `[clones] * #Mutations`.
 
 `-e(--exp)` Set this parameter to output experimental-format results. See experimental results.
@@ -55,8 +55,8 @@ and with a experimental-format output.
 
 Input format
 ----------------
-**gppf** accept to different input format:
-- The [simulated data format](data/simulated/n10_m20/0.sim), for file of extension `.sim` (required), is a frequency matrix F of tab separated values. The first line is a dummy line of mutation names.
+**gppf** accepts two different input format:
+- The [simulated data format](data/simulated/n10_m20/0.sim), for a file with extension `.sim` (required), is a frequency matrix F of tab separated values. The first line is a dummy line of mutation names.
 
 	| Mut_0	 |	Mut_0- | Mut_1  | Mut_1- |	Mut_2  | Mut_2- |
 	|--------|---------|--------|--------|---------|--------|
@@ -71,7 +71,7 @@ for reference and mutated alleles.
 
 Detailed-format Output
 -----------------
-When not running an experiment **gppf** outputs all the information in detail in a file called `res_INPUTNAME.txt` created in the
+When not running an experiment **gppf** outputs the detailed information in detail in a file called `res_INPUTNAME.txt` created in the
 same folder where gppf is running. The output file contains:
 - Elapsed time
 - Input name
@@ -97,8 +97,8 @@ to run the execution of *CLL077* as described in the paper use:
 
 Experimental-format Output
 ------------------------------
-In the experiments the programs that does not outputs all the
-informations regarding the clonal matrix, the usage matrix and does not print
+In the experiments, the program does not output all the
+informations regarding the clonal matrix, the usage matrix, and does not print
 a tree of the reconstructed phylogeny.
 It instead prints informations useful for testing. In specific it prints a 
 **CSV** file with the following informations: <br>
@@ -107,13 +107,10 @@ clone_used, k, time, total_error, accuracy`
 
 We can see as an example the Dollo(2) output of [Exp.2](experimental_results/simulated/exp2/dollo.csv)
 
-Recreating experiments
+Replicating the experiments in the paper
 -----------------------
-To start the experiments described in the paper run the bash files `start_exp1.sh` and `start_exp2.sh`
-note that this experiments can be easily parallelized by separating the `for` cycles in different files
+To start the experiments described in the paper, run the bash files `start_exp1.sh` and `start_exp2.sh`.
+Note that these experiments can be easily parallelized by separating the `for` cycles in different files
 or sessions. The bash files also recreate the plot and the table present in the paper by running programs
-`plot_from_csv.R` and `make_table.py`, the last two programs require the output file of `gppf` to be in 
-the root directory, (as default)
-
-
-
+`plot_from_csv.R` and `make_table.py`. The last two programs require the output file of `gppf` to be in 
+the root directory, (as default).
