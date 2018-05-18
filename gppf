@@ -30,6 +30,8 @@ parser.add_argument('-c', '--clones', action='store', type=float, required=True,
 	'The actual amount of maximum clones used is calculated by : [clones] * #Mutations.')
 parser.add_argument('-e', '--exp', action='store_true', default=False,
 	help='set -e to get experimental-format results.')
+parser.add_argument('--mps', action='store_true',
+	help='This will output the model in MPS format instead of running the solver')
 
 args = parser.parse_args()
 
@@ -413,6 +415,10 @@ elif args.model == 'caminsokal':
 
 
 print('#----- GUROBI OPTIMIZATION ----#')
+if args.mps:
+	model.write('%s.mps' % matrix_name)
+	sys.exit(0)
+
 start_optimize = datetime.now()
 model.optimize()
 
