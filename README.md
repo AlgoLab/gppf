@@ -115,6 +115,12 @@ or sessions. The bash files also recreate the plot and the table present in the 
 `plot_from_csv.R` and `make_table.py`. The last two programs require the output file of `gppf` to be in 
 the root directory, (as default).
 
+Exporting the model in MPS format
+---------------------------------
+It is also possible to export the ILP model to the standard MPS format using the `--mps` argument.
+With this flag *gppl* will output the model in MPS format that can be fed to any other Solver that support it,
+like CPLEX, Google OR-Tools, etc.
+
 Use on Single Cell Sequencing Data
 -----------------------------------
 We provide here another tool, called *gppl*, similar to the previous one, 
