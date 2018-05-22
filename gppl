@@ -1,0 +1,346 @@
+#!/usr/bin/python
+# Compute the tree which maximizes the likehood
+from gurobipy import *
+import sys, os, math, errno
+from datetime import datetime
+import argparse
+
+#user-created libraries
+sys.path.append(os.path.abspath(os.getcwd() + '/utils'))
+from matrix_utils import *
+from outputs import *
+
+#==================================================================#
+#========================= PREREQUISITES ==========================#
+#==================================================================#
+
+#--------------------------Parse Arguments-------------------------#
+parser = argparse.ArgumentParser(description='gppl', add_help=True)
+
+parser.add_argument('-m', '--model', required=True,
+	choices=['perfect', 'persistent', 'dollo'])
+parser.add_argument('-f', '--file', action='store', type=str, required=True,
+	help='path of the input file.')
+parser.add_argument('-k', action='store', type=int,
+	help='k-value of the selected model. Eg: Dollo(k)')
+parser.add_argument('-t', '--time', action='store', type=int, required=True,
+	help='maximum time allowed for the computation. Type 0 to not impose a limit.')
+parser.add_argument('-o', '--outdir', action='store', type=str, required=True,
+	help='output directory.')
+	
+parser.add_argument('-e', '--exp', action='store_true', default=False,
+	help='set -e to get experimental-format results.')
+parser.add_argument('-b', '--falsepositive', action='store', type=float, required=True,
+	help='set -b False positive probability.')
+parser.add_argument('-a', '--falsenegative', action='store', type=float, required=True,
+	help='set -a False negative probability.')
+
+args = parser.parse_args()
+
+if args.model == 'perfect':
+	args.model = 'dollo'
+	args.k = 0
+if args.model == 'persistent':
+	args.k = -1
+if args.k is None and args.model != 'perfect' and args.model != 'persistent':
+	parser.error('-m (--model) {0} requires -k K'.format(args.model))
+#if args.k == 'full' and args.model != 'persistent':
+#	parser.error('-k full can be used only with -m persistent')
+#if args.k == 'full' and args.model == 'persistent':
+#	args.k = -1
+
+#args.k = int(args.k)
+alpha = float(args.falsenegative)
+beta = float(args.falsepositive)
+
+#----------------------Initialize program----------------------#
+#Input frequency matrix
+#input_matrix, mutation_names = import_matrix_tab(args.file, args.model, args.k)
+input_matrix = import_trinary_matrix_tab(args.file)
+matrix_name = os.path.basename(args.file).split('.')[0]
+
+#Fixed parameters
+#num_samples = len(input_matrix)
+# num_clones = int(num_mutations * args.clones)
+num_clones = len(input_matrix)
+num_mutations = len(input_matrix[0])
+max_error = 1
+
+#print('Num samples: %d' % num_samples)
+print('Num mutations: %d' % num_mutations)
+print('Num clones: %d' % num_clones)
+
+import os
+try:
+    os.makedirs(args.outdir)
+except OSError as exc:
+    if exc.errno == errno.EEXIST and os.path.isdir(args.outdir):
+        pass
+    else:
+        raise
+
+filename = os.path.splitext(os.path.basename(args.file))[0]
+outfile = os.path.join(args.outdir, filename)
+
+#==================================================================#
+#========================== GUROBI MODEL ==========================#
+#==================================================================#
+start_model_time = datetime.now()
+model = Model('Parsimony Phylogeny Model')
+model.setParam('Threads', 4)
+if args.time != 0:
+	model.setParam('TimeLimit', args.time)
+
+#---------------------------------------------------#
+#------------------- VARIABLES ---------------------#
+#---------------------------------------------------#
+
+#-----------Variable Y and B---------------
+
+lalpha=math.log(alpha)
+lbeta=math.log(beta)
+l_alpha=math.log(1-alpha)
+l_beta=math.log(1-beta)
+n_ones=0
+n_zeros=0
+
+print (lalpha, lbeta, l_alpha,l_beta)
+
+if args.model == 'persistent':
+	print('Generating variables y..')
+	y = {}
+	c = 0
+	while c < num_clones:
+		m = 0
+		while m < num_mutations:
+                        if input_matrix[c][m] == 0 :
+        			n_zeros+=1
+                                y[c, 2*m] = model.addVar(vtype=GRB.BINARY,
+                                        obj=lalpha-l_beta, name='y[{0},{1}]'.format(c, m))
+                         	y[c, 2*m+1] = model.addVar(vtype=GRB.BINARY,obj=-lalpha+l_beta,
+                        	        name='y[{0},{1}]'.format(c, m))
+	             	elif input_matrix[c][m]== 1 :
+				n_ones+=1
+                                y[c, 2*m] = model.addVar(vtype=GRB.BINARY,
+                                        obj=l_alpha-lbeta, name='y[{0},{1}]'.format(c, m))
+                        	y[c, 2*m+1] = model.addVar(vtype=GRB.BINARY,obj=-l_alpha+lbeta,
+                                	name='y[{0},{1}]'.format(c, m))
+			else :
+                                y[c, 2*m] = model.addVar(vtype=GRB.BINARY,
+                                        obj=0, name='y[{0},{1}]'.format(c, m))
+                        	y[c, 2*m+1] = model.addVar(vtype=GRB.BINARY,obj=0,
+                                	name='y[{0},{1}]'.format(c, m))
+			m += 1
+		c += 1
+
+	print('Generating variables b..')
+	B = {}
+	p = 0
+	while p < 2*num_mutations:
+		q = p + 1
+		while q < 2*num_mutations:
+			B[p,q,1,1] = model.addVar(vtype=GRB.CONTINUOUS, obj=0, 
+				name='B[{0},{1},1,1]'.format(p,q))
+			B[p,q,1,0] = model.addVar(vtype=GRB.CONTINUOUS, obj=0, 
+				name='B[{0},{1},1,0]'.format(p,q))
+			B[p,q,0,1] = model.addVar(vtype=GRB.CONTINUOUS, obj=0, 
+				name='B[{0},{1},0,1]'.format(p,q))
+			B[p,q,0,0] = 1
+			q += 1
+		p += 1
+
+elif args.model == 'dollo':
+	print('Generating variables y..')
+	y = {}
+	c = 0
+	lab = 0
+	while c < num_clones:
+		m = 0
+		while m < (args.k+1)*num_mutations:
+			if m % (args.k+1) == 0 :
+				if input_matrix[c][m/(args.k+1)] == 0 :
+					lab=lalpha-l_beta
+					n_zeros+=1
+				elif input_matrix[c][m/(args.k+1)] == 1 :
+					lab=l_alpha-lbeta
+					n_ones+=1
+				else :
+					lab=0
+
+				y[c, m] = model.addVar(vtype=GRB.BINARY,obj=lab, 
+					name='y[{0},{1}]'.format(c, m))
+			else :
+				y[c, m] = model.addVar(vtype=GRB.BINARY,obj=-lab, 
+					name='y[{0},{1}]'.format(c, m))
+			m += 1
+		c += 1
+
+	print('Generating variables b..')
+	B = {}
+	p = 0
+	while p < (args.k+1)*num_mutations:
+		q = p + 1
+		while q < (args.k+1)*num_mutations:
+			B[p,q,1,1] = model.addVar(vtype=GRB.CONTINUOUS, obj=0, 
+				name='B[{0},{1},1,1]'.format(p,q))
+			B[p,q,1,0] = model.addVar(vtype=GRB.CONTINUOUS, obj=0, 
+				name='B[{0},{1},1,0]'.format(p,q))
+			B[p,q,0,1] = model.addVar(vtype=GRB.CONTINUOUS, obj=0, 
+				name='B[{0},{1},0,1]'.format(p,q))
+			B[p,q,0,0] = 1
+			q += 1
+		p += 1
+
+#-------------OBJECTIVE FUNCTION-----------
+model.modelSense = GRB.MAXIMIZE
+model.update()
+
+#---------------------------------------------------#
+#------------------ CONSTRAINTS --------------------#
+#---------------------------------------------------#
+
+print('Generating constraints')
+
+#-------------Model Specific constraints------------
+
+if args.model == 'persistent':
+	#Persistent condition
+	c = 0
+	while c < num_clones:
+		m = 0
+		while m < num_mutations:
+			model.addConstr(y[c, 2*m] >= y[c, 2*m + 1], 
+				'(Pers)[{0}, {1}]'.format(c,m))
+			m += 1
+		c += 1
+
+	#B constraint
+	c = 0
+	while c < num_clones:
+		p = 0
+		while p < num_mutations*2:
+			q = p + 1
+			while q < num_mutations*2:
+				model.addConstr(
+					y[c, p] + y[c, q] - B[p, q, 1, 1] <= 1, 
+					'B[{0},{1},1,1]_{2}'.format(p,q,c))
+				model.addConstr(
+					- y[c, p] + y[c, q] - B[p, q, 0, 1] <= 0, 
+					'B[{0},{1},0,1]_{2}'.format(p,q,c))
+				model.addConstr(
+					y[c, p] - y[c, q] - B[p, q, 1, 0] <= 0, 
+					'B[{0},{1},1,0]_{2}'.format(p,q,c))
+				q += 1
+			p += 1	
+		c += 1
+
+	#No conflicts constraint
+	p = 0
+	while p < num_mutations*2:
+		q = p + 1
+		if p %2 == 0:
+			q +=1
+		while q < num_mutations*2:
+			model.addConstr(
+				B[p,q,0,1] + B[p,q,1,0] +B[p,q,1,1] <= 2,
+	                    'Conf[{0},{1}]'.format(p,q))
+			q += 1
+		p += 1
+
+	#Generating constraint for persistent characters'
+	model.addConstr(
+	quicksum(B[2*p,2*p+1,1,1] for p in range(num_mutations)) <= args.k, 
+	'Number of persistent characters')
+
+elif args.model == 'dollo':
+	# Dollo condition
+	c = 0
+	while c < num_clones:
+		m = 0
+		while m < num_mutations:
+			model.addConstr(y[c, (args.k+1)*m] - 
+					quicksum(y[c, (args.k+1)*m + k] 
+						for k in range(1, args.k+1)) >= 0, 
+					'(Dollo)[{0}, {1}]'.format(c,m))
+			m += 1
+		c += 1
+
+	#B constraint
+	c = 0
+	while c < num_clones:
+		p = 0
+		while p < (args.k+1)*num_mutations:
+			if p % (args.k+1) == 0:
+				q = p + args.k + 1
+			else:
+				q = p + 1
+			while q < (args.k+1)*num_mutations:
+				model.addConstr(
+					y[c, p] + y[c, q] - B[p, q, 1, 1] <= 1, 'B[{0},{1},1,1]_{2}'.format(p,q,c))
+				model.addConstr(
+					- y[c, p] + y[c, q] - B[p, q, 0, 1] <= 0, 'B[{0},{1},0,1]_{2}'.format(p,q,c))
+				model.addConstr(
+					y[c, p] - y[c, q] - B[p, q, 1, 0] <= 0, 'B[{0},{1},1,0]_{2}'.format(p,q,c))
+				q += 1
+			p += 1	
+		c += 1
+
+	#No conflicts constraint
+	p = 0
+	while p < (args.k+1)*num_mutations:
+		q = p + 1
+		while q < (args.k+1)*num_mutations:
+			model.addConstr(
+				B[p,q,0,1] + B[p,q,1,0] +B[p,q,1,1] <= 2,
+	                    'Conf[{0},{1}]'.format(p,q))
+			q += 1
+		p += 1	
+
+
+
+print('#----- GUROBI OPTIMIZATION ----#')
+start_optimize = datetime.now()
+model.optimize()
+
+#==================================================================#
+#======================= POST OPTIMIZATION ========================#
+#==================================================================#
+# if args.exp:
+# 	print_exp_solution(num_clones, num_samples, num_mutations,
+# 		start_optimize, args, model, u, x, input_matrix, matrix_name)
+# else:
+# 	print_solution(num_clones, num_samples, num_mutations,
+# 		start_optimize, args, model, u, x, y, error, input_matrix, matrix_name, mutation_names)
+
+matrix = []
+with open('{0}.ilp.out'.format(outfile), 'w+') as file_out:
+	c = 0
+	while c < num_clones:
+		k = 0
+		row = []
+		row_int = []
+		while k < (args.k+1)*num_mutations:
+			row.append(str(int(y[c, k].X)))
+			row_int.append(int(y[c, k].X))
+			k += 1
+		file_out.write(' '.join(row))
+		file_out.write('\n')
+		matrix.append(row_int)
+		c += 1
+
+if model.status == GRB.Status.OPTIMAL or model.status == GRB.Status.TIME_LIMIT:
+	value = float(model.objVal) + n_zeros * l_beta + n_ones * lbeta
+	with open('{0}.ilp.log'.format(outfile), 'w+') as file_out:
+		file_out.write('Optimal likelihood: %d\n' % value)
+	
+	names = []
+	matrix = np.array(matrix)
+	print(matrix)
+	for m in range(num_mutations):
+		names.append(str(m+1))
+		for k in range(args.k):
+			names.append('%d_%d-' % (m+1, k+1))
+	print(names)
+	
+	from tree import *
+	write_tree_comp(matrix, names, '{0}.ilp.gv'.format(outfile))
