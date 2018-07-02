@@ -82,7 +82,11 @@
 \begin{document}
 
 \title{Inferring Cancer Progression from Single-cell via ILP}
-% \author[Ciccolella \textit{et~al}]{Simone Ciccolella\,$^{1,}$\footnote{to whom correspondence should be addressed}, Mauricio Soto Gomez\,$^{1}$, Murray Patterson\,$^{1}$, Gianluca Della Vedova\,$^{1}$, Iman Hajirasouliha\,$^{2,3}$ and Paola Bonizzoni\,$^{1}$}
+\author{Simone Ciccolella \and   Mauricio Soto Gomez \and
+  Murray Patterson \and
+  Gianluca Della Vedova \and
+  Iman Hajirasouliha \and
+  Paola Bonizzoni}
 % \address{$^{1}$Department of Computer Science, Systems and Communication, Univ. Milano-Bicocca, Milan, Italy\\
 % $^{2}$Institute for Computational Biomedicine, Department of Physiology and Biophysics, Weill Cornell Medicine of Cornell University, NY, USA\\
 % $^{3}$Englander Institute for Precision Medicine, The Meyer Cancer Center, Weill Cornell Medicine, NY, US}
@@ -278,94 +282,6 @@ Since finding  a perfect phylogeny is  easy, the main difficulty  in solving the
   IDP problem consists of replacing each $?$ with a $0$ or a $1$ to minimize the
   number of conflicting pairs of columns.
 %
-\subsection{ILP formulation for the IDP}
-\label{sec:ilp}
- In this section we revisit the ILP formulation proposed~\cite{Gusfield2007} for the IDP problem.
-%
-The input of the problem is an incomplete $n\times m$ matrix $M_?$.
-The goal is to decide if there exists a completion of the unknown
-entries  of $M_?$ resulting in
-a (complete) matrix  admitting a Perfect Phylogeny.
-The main  strategy of  this approach  is to state  the problem  as the
-  minimization of the conflicts between pairs of characters. 
-Thus, in virtue of the  Perfect Phylogeny Theorem, the IDP problem
-will have a solution if and only if the cost of the minimization problem
-is zero.  
-
-% In what follows, we  briefly explain the key elements of the  ILP and we discuss
-% the required changes for its use in the MIDPP problem.
-
-\subsubsection{Variables}
-  \label{sec:ILP_variables}  
-A binary variable $Y(i,j)$ is defined for each unknown position of $M_?$.
-With an abuse of notation, $Y(i,j)$ will be  a constant for every known
-  position of the matrix of value  $M_?(i,j)$.  
-Since the objective is to determine if two columns are in conflict,
-  for every pair of columns $p,q$ we define a  binary variable $C(p,q)$
-  which indicates the existence of a conflict between these two columns.
-To establish if two columns are in conflict, we introduce the binary variables 
-   $B(p,q,a,b)$, which  are defined for each pair of columns $(p,q)$ and for each
-   possible  pair  of  values  $(a,b)\in \{0,1\}^2$.
-The variable $B(p,q,a,b)$ indicates if for the (ordered) pair of columns $(p,q)$
-  there  exists a row $i$ where $Y(i,p)=a$ and $Y(i,q)=b$.
-Just as for the variable $Y(i,j)$, if there exists a row of the matrix such that 
-  $Y(i,p)=a$ and $Y(j,q)=b$, then $B(p,q,a,b)=1$.
-
-\subsubsection{Inequalities}
-\label{sec:ILP_ineq}
-For each pair $(p,q)$ of columns, for each pair $(a,b)\in
-\{(1,0),(0,1),(1,1)\} $, and for each species $i$, the following set of inequalities 
-\begin{equation}\label{eq:B}
-   B(p,q,a,b)\ge 1-[a+(-1)^{a} Y(i,p)]-[b+(-1)^{b}
-  Y(i,q)]
-  \end{equation}
-  force the variable $B(p,q,a,b)$ to be $1$ if and only if the columns $p,q$
-  exhibit the pair $(a,b)$ in some row $i$.
- % We denote this set of constraints for an input matrix $M$ by $\mathcal B(M)$.  
-  On the other hand, the following set of inequalities
-  %, denoted by $\mathcal C(M)$, 
- forces  variables  $C(p,q)$ to  be  $1$  when characters  $p$  and  $q$ are  in
- conflict:  
-\begin{equation}\label{eq:C} 
-  C(p, q) \ge B(p,q,0,1) + B(p,q,1,0) + B(p,q,1,1)- 2  
-\end{equation}
-
-%\notaestesa{paola}{the following sentence is not clear to me...please specify}
-% In  the  following sections  we  extend  this  formulation for  finding  minimal
-% conflict completions when more general phylogenetic models are considered.
-% Nevertheless, in the $\mathcal P$-VAFF problem we are 
-% mainly interested about feasible solutions with no conflicts, that is
-% when $C(p,q)=0$ for all pair of characters $p$ and $q$.
-Since we are mainly interested in feasible solutions with no conflicts,
-we  will  consider  the   following  alternative  form  of  the  previous
-constraint: 
-\begin{equation}\label{eq:C=0}
-   B(p,q,0,1) + B(p,q,1,0) + B(p,q,1,1)\le 2.  
-\end{equation}
-% \notaestesa{GDV}{ Mauricio, the equation above allows to remove the variables $ C(p,q)$
-%   and to pick any objective function.
-% Do you agree with removing $C(p,q)$?}
-
-% \notaestesa{MS}{In fatti  per questo la  modifichiamo così. Ho lasciato  (2) per
-%   essere fedele al lavoro di Gusfield che si descrive in questa parte}
-
-%
-\subsubsection{Objective Function} Since we aim to minimize
-the number of conflicts,  the objective function is defined as
-$\min\sum_{(p,q)}C(p,q)$.
-
-By the previous discussion it is possible to state the problem of
-finding a  completion with the  minimal number  of conflicts by  considering the
-solution of the following minimization problem~\cite{Gusfield2007}: 
-$
-\min\sum_{(p,q)}C(p,q)\;\text{ s.t.}\;\eqref{eq:B}, \eqref{eq:C}.
-$
-We stress that that decision problem of determining if an incomplete matrix admits a
-Perfect Phylogeny can be seen as checking if the former problem has zero cost  or,
-equivalently, there exists a  feasible  solution  satisfying~\eqref{eq:B}
-and~\eqref{eq:C=0}.
-The  total  number of  variables  and  constraints  in  the formulation  are
-$O(nm+m^2)$ and $O(nm^2)$ respectively.
 
 \subsection{The Persistent Perfect Phylogeny and the IDP}
 \label{sec:persistent-idp}
@@ -693,11 +609,86 @@ In the tree, boldfaced character corresponds to changes between each node and it
     \label{fig:M_e}
   \end{figure}
 
-The objective function \notaestesa{GDV}{ TODO}
+\subsection{The ILP formulation}
+\label{sec:ilp}
+In this section we revisit the ILP formulation proposed~\cite{Gusfield2007} for the IDP problem.
+%
+The input of the problem is an incomplete $n\times m$ matrix $M$.
+More precisely, we have a set of binary variables $M(c,m)$ such that $M(c,m)=1$ if cell
+$c$ has (according to the input data) the mutation $m$, while $M(c,m)=0$ if cell
+$c$ does not have (according to the input data) the mutation $m$.
+%
+Notice that the input data is incomplete, hence we can have pairs $(c,m)$ such that
+$M(c,m)$ is unspecified.
 
-\subsection{ILP implementation: gppf}
 
-Our approach has been implemented with a  Python program called \texttt{gppf}. 
+A similar set of variables is used for the extended matrix $E$.
+In fact, we have the variables $E(c,m^{+})$ and $E(c,m_{i}^{-})$ that encode the extended
+matrix $E$ that we want to find.
+
+
+The goal is to decide if there exists a completion of the unknown
+entries  of $M$ resulting in
+a (complete) matrix  admitting a Perfect Phylogeny.
+The main  strategy of  this approach  is to state  the problem  as the
+  minimization of the conflicts between pairs of characters. 
+Thus, in virtue of the  Perfect Phylogeny Theorem, the IDP problem
+will have a solution if and only if the cost of the minimization problem
+is zero.  
+
+% In what follows, we  briefly explain the key elements of the  ILP and we discuss
+% the required changes for its use in the MIDPP problem.
+
+
+
+Since the objective is to determine if two columns are in conflict,
+  for every pair of columns $p,q$ we define a  binary variable $C(p,q)$
+  which indicates the existence of a conflict between these two columns.
+To establish if two columns are in conflict, we introduce the binary variables 
+   $B(p,q,a,b)$, which  are defined for each pair of columns $(p,q)$ and for each
+   possible  pair  of  values  $(a,b)\in \{0,1\}^2$.
+The variable $B(p,q,a,b)$ indicates if for the (ordered) pair of columns $(p,q)$
+  there  exists a cell $c$ where $E(c,p)=a$ and $E(c,q)=b$.
+Moreover, if there exist two cells $c_{1}$ and $c_{2}$ such that 
+  $E(c_{1},p)=a$ and $E(c_{2},q)=b$, then $B(p,q,a,b)=1$.
+
+For each pair $(p,q)$ of columns, for each pair $(a,b)\in
+\{(1,0),(0,1),(1,1)\} $, and for each cell $c$, the following set of inequalities 
+\begin{equation}\label{eq:B}
+   B(p,q,a,b)\ge 1-[a+(-1)^{a} E(c,p)]-[b+(-1)^{b}
+  E(c,q)]
+  \end{equation}
+  forces the variable $B(p,q,a,b)$ to be $1$ if and only if the columns $p,q$
+  exhibit the pair $(a,b)$ in some row $i$.
+
+Since we want phylogenies that correspond to extended matrices without conflicts,
+we  will  consider  the   following  alternative  form  of  the  previous
+constraint: 
+\begin{equation}\label{eq:C=0}
+   B(p,q,0,1) + B(p,q,1,0) + B(p,q,1,1)\le 2.  
+\end{equation}
+
+We denote with $w(c,m)$ the contribution of the cell $c$ and the mutation $m$ to the
+objective function.
+If $M(c,m)=1$, then $w(c,m) = \left(1 - \alpha\right) \left( E(c,m^{+}) - \sum_{i} E(c, m_{i}^{-}) \right)
++  \beta \left( 1 - E(c,m^{+}) - \sum_{i} E(c, m_{i}^{-}) \right)$.
+Symmetrically, if  $M(c,m)=0$, then $w(c,m) = \alpha \left( E(c,m^{+}) - \sum_{i} E(c, m_{i}^{-}) \right)
++  \left(1 - \beta\right) \left( 1 - E(c,m^{+}) - \sum_{i} E(c, m_{i}^{-}) \right)$.
+
+
+The objective function that we want to maximize becomes:
+\begin{equation}
+\label{eq:log-likelihood-goal}
+    \mbox{max } \sum_c \sum_m \log w(c,m).
+\end{equation}
+
+
+The  total  number of  variables  and  constraints  in  the formulation  are
+$O(nm+m^2)$ and $O(nm^2)$ respectively.
+
+\subsection{ILP implementation: gpps}
+
+Our approach has been implemented with a  Python program called \texttt{gpps}. 
   The code, data and scripts used in our experimental analysis is 
   available at \url{https://github.com/AlgoLab/gppf}.
 The algorithm receives as input  a frequency matrix $F$, the evolution
