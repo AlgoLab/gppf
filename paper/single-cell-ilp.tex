@@ -125,12 +125,14 @@ Here we propose the Simulated Annealing Single Cell inference (\texttt{SASC}) to
 As mentioned before, cancer progression reconstruction can be modeled as a
 character-based phylogeny reconstruction problem in which mutations
 are represented by the presence/absence of characters in different 
-cell groups represented by the species.
-\begin{figure}[tb]
-  \begin{minipage}{0.4\linewidth}
-     \includegraphics[scale=.4]{img/dollo_example}
+cells.
+
+
+\begin{figure}[tb!]
+  \begin{minipage}[c]{0.55\textwidth}
+     \includegraphics{img/dollo_example-figure0}
 \end{minipage}
-\begin{minipage}{0.3\linewidth}
+\begin{minipage}[t]{0.3\textwidth}
         \begin{tabular}[!t]{c|ccccccc}
              & a & b & c & d & e & f & g  \\ \hline
             $s_1$ & 1 & 1 & 1 & 0 & 0 & 0 & 0 \\
@@ -144,56 +146,61 @@ cell groups represented by the species.
 \label{fig:dollo}
 \end{figure}
 
-The input is an $n \times m$ ternary matrix $I_{ij}$, where entry $I_{ij}=0$ indicates
-that the sequence of cell $i$ does not have mutation $j$, $I_{ij}=1$ indicates the presence of mutation $j$ in the sequence of cell $i$, and a 2 indicates
-that there is not enough information on the presence/absence of mutation $j$ in cell $i$.
+The input is a ternary matrix $I_{c,m}$, where the entry $I_{c,m}=0$ indicates
+that the cell $c$ does not have the mutation $m$, while $I_{c,m}=1$ indicates that the
+cell $c$ has the mutation $m$.
+Finally, $I_{c,m}=?$ indicates
+that there is not enough information on the presence/absence of mutation $m$ in cell $c$.
 Uncertainty about the presence of a mutation in a cell is a consequence of insufficient coverage in the sequencing. 
 
 However, uncertainty is not the only issue in the sequencing process:
 the input matrix $I$ also contains false positives and false negatives. 
 We assume that these error occur independently and uniformly across 
 all the (known) entries of $I$. 
-Namely, if $E_{ij}$ denotes the estimated $n\times m$ output matrix, \ie the binary matrix without errors and noise estimated by the algorithm,
-$\alpha$ denotes the false negative rate and $\beta$ denotes the false positive rate; then for each $ij$ entry of $E$ the following holds:
+Namely, $P$ denotes the predicted matrix, \ie the binary matrix without
+missing values computed by the algorithm.
+In this case,
+$\alpha$ denotes the false negative rate and $\beta$ denotes the false positive rate.
+In other words, for each pair $(c,m)$, 
 \begin{itemize}
-    \item $P(I_{ij} = 0|E_{ij} = 0) = 1- \beta$
-    \item $P(I_{ij} = 1|E_{ij} = 0) = \beta$
-    \item $P(I_{ij} = 1|E_{ij} = 1) = 1- \alpha$
-    \item $P(I_{ij} = 0|E_{ij} = 1) = \alpha$
+    \item $Pr(I_{c,m} = 0|P_{c,m} = 0) = 1- \beta$
+    \item $Pr(I_{c,m} = 1|P_{c,m} = 0) = \beta$
+    \item $Pr(I_{c,m} = 1|P_{c,m} = 1) = 1- \alpha$
+    \item $Pr(I_{c,m} = 0|P_{c,m} = 1) = \alpha$
 \end{itemize}
 
-We aim to find a matrix $E$ that maximizes the following function 
+Our goal is to find a matrix $P$ that (1) corresponds to a phylogeny on the set of cells,
+and (2) maximizes the the likelihood 
 $$
-    \mbox{max } P(I|E) = \prod_{i}^{n} \prod_{j}^{m} P(I_{ij}|E_{ij}).
+Pr(I|P) = \prod_{m} \prod_{c} Pr(I_{c,m}|P_{c,m})
 $$
+of the observed matrix $I$~\cite{Jahn2016}.
 In other words, we attempt to maximize the likelihood of the observed matrix $I$~\cite{Jahn2016}.
 We point out that the values of the unknown entries of the input matrix 
 do not affect in the objective function.
-Thus, $P(I_{ij} = 2|E_{ij} = 1) = P(I_{ij} = 2|E_{ij} = 0) = 1$.
+% Thus, $Pr(I_{c,m} = ?|P_{c,m} = 1) = Pr(I_{c,m} = ?|P_{c,m} = 0) = 1$.
 
-Moreover, since we are interested in the reconstruction of the evolutionary history 
-of the input cells, we must provide, together with
-matrix $E$, a phylogenetic tree which explains the evolution 
-of the mutations present in the cells of the output matrix.
+We recall that we are interested in the reconstruction of the evolutionary history 
+of the input cells, hence we focus only on matrices $P$ that correspond to a phylogeny on
+the cells.
 
-A phylogenetic tree is defined as a rooted labeled tree $T$ in 
-which the label set corresponds to a set of characters, and the 
-leaves of $T$ have the void label.
-The state of a node is defined as the set of 
-labels (characters) in the path from the root.
-The state of each leaf $l$ of $T$ is naturally
-represented by an $m$-dimensional binary vector, that
-we denote $D(T,l)$, such that $D(T,l)_j=1$ if and
-only if the $l$ contains the mutation $j$ and zero otherwise.
+A phylogeny is a rooted labeled tree $T$, where the label set corresponds to the set of mutations.
+The state of a leaf $x$ is defined as the set of 
+labels in the path from $x$ the root.
+Moreover, the state of $x$ is naturally
+represented by a binary vector, denoted by $\lambda(x)$, such that $\lambda(x)[m]=1$ if and
+only if the node $x$ contains the mutation $m$, and $\lambda(x)[m]=0$ otherwise.
 
-We say that the tree $T$ encodes a matrix $E$ 
-if there exists a mapping $\sigma$ of the rows (cells) of $E$
-as leaves of $T$ such that for every row $E_{i}=D(T,\sigma_i)$,
-where $\sigma_i$ denotes the image of row $i$ by $\sigma$, 
-\ie $\sigma_i$ is the node in the phylogenetic tree to which cell $i$ is attached as leaf.
+We say that the tree $T$ encodes a matrix $P$ 
+if there exists a mapping $\sigma$ of the rows  of $P$
+to the leaves of $T$ such that for each row $r$ of $P$, $r=\lambda(\sigma(r))$,
+where $\sigma(r)$ denotes the leaf of $T$ associated with $r$ through $\sigma$.
+In other words, in the tree $T$ we assume that cell $c$ has been extracted from the
+subpopulation $\sigma(c)$.
+
 \begin{figure}[!tb]
-  \begin{minipage}{0.7\linewidth}
-    \includegraphics[scale=.4]{img/dollo_non_unique}
+  \begin{minipage}{0.72\linewidth}
+    \includegraphics[scale=.65]{img/dollo_non_unique}
 \end{minipage}
 \begin{minipage}{0.2\linewidth}
     \begin{tabular}[!t]{c|ccc}
@@ -232,307 +239,204 @@ with a Dollo evolutionary model is
 an NP-complete problem~\cite{BKW95,DAY198633}.
 A hierarchical chain of restricted versions of the model can be obtained by bounding the number of deletions for each character.
 We denote as Dollo($k$) the evolutionary model in which each mutation can be acquired exactly once and can be lost at most $k$ times. 
-In this way Dollo(0) and Dollo(1) correspond to the perfect and persistent phylogeny models, respectively.
-In the tree generation process for the Dollo($k$) model ($k>0)$ we are required to augment the phylogenic tree $T$ representing the cancer progression by adding nodes which represent the loss of a mutation, i.e. a node labelled $p^-_l$, representing the $l$-th loss of mutation $p$. 
-As a consequence, the function $D(T, \sigma)$ needs to be slightly modified to take account of the losses. The genotype profile of a row $i$ is then given by the mutations acquired in the path from the root to the parent of $\sigma_i$ minus all of the potential losses encountered in the path.
-We stress the fact that, when deletions are introduced, 
-the set of feasible phylogenies which represent a given solution is no longer unique as in the case of Perfect phylogeny. We can see that switching the labels of nodes $b^-$ and $d^-$ in Figure~\ref{fig:dollo} produces a different tree which is still a solution of the proposed input matrix. 
-Moreover we see that ancestral relationship between characters is different in both representations.
-When the number of cells, mutations and possible deletions increases, and with the noise caused by false calls and missing entries, this problem is greatly amplified, causing the number of different cancer progression phylogenies which equally explain the same input, to explode. A more complex example can be seen in Figure~\ref{fig:dollo_non_unique} where a different order of mutations and a different set of deletions can equally explain a given input.
-
-\section{Preliminaries}
-\label{sec:preliminaries}
+In this way Dollo($0$) and Dollo($1$) correspond to the perfect and persistent phylogeny models, respectively.
+In the tree generation process for the Dollo($k$) model ($k>0$) we are required to augment
+the phylogenic tree $T$ representing the cancer progression by adding nodes which
+represent the loss of a mutation, \ie a node labelled $m^-_l$, representing the $l$-th
+loss of mutation $m$.  
+As a consequence, the function $\lambda(\cdot)$ needs to be slightly modified to take
+account of the losses.
+The state of the leaf $x$ is  the set of  mutations $m$ that, in the path from the root to
+$x$, have been acquired --- the path has a vertex labeled $m^{+}$ --- but never lost ---
+the path has no vertex labeled $m_{i}^{-}$.
+We stress  that, when deletions are introduced, 
+the set of feasible phylogenies which represent a given solution is no longer unique as in
+the case of Perfect phylogeny.
+% We can see that switching the labels of nodes $b^-$ and $d^-$ in Figure~\ref{fig:dollo} produces a different tree which is still a solution of the proposed input matrix. 
+% Moreover we see that ancestral relationship between characters is different in both representations.
+% When the number of cells, mutations and possible deletions increases, and with the noise caused by false calls and missing entries, this problem is greatly amplified, causing the number of different cancer progression phylogenies which equally explain the same input, to explode. A more complex example can be seen in Figure~\ref{fig:dollo_non_unique} where a different order of mutations and a different set of deletions can equally explain a given input.
 
 
 
 \subsection{The Incomplete Directed Perfect Phylogeny Problem}
 \label{sec:idpp}
 
-The character-based phylogeny reconstruction problems we study in this
-  paper are constrained versions of the general Incomplete Directed
-  Perfect  Phylogeny (IDP)~\cite{Peer_2004}.
-The IDP problem asks for completing missing data in a binary matrix, where
-  missing data are represented by the symbol $?$, in such a way that the
-  completed matrix is explained by a perfect phylogeny.
-More precisely, the input data is an $n\times m$ matrix $M_{?}$, where
-  $M_{?}(i,j)\in \{0,1,?\}$ represents the absence, presence or
-  uncertainty of a character $j$ in the species $i$ respectively.
-If a solution  exists, then it consists of changing  each $?$ into $0$
-  or $1$  obtaining a new  binary matrix  $M_{s}$ that has  a directed
-  perfect phylogeny. 
+Testing if an incomplete matrix $P$ has a phylogeny under the Dollo($k$) model has been
+attacked via ILP for $k=0$~\cite{Gusfield2007}, $k=1$~\cite{gusfield_persistent_2015}, and
+for general $k$~\cite{Bonizzoni:2017:BPP:3107411.3107441}.
+We will exploit the latter formulation to describe an ILP approach for tumor phylogeny
+reconstruction from single-cell data.
+
+% The character-based phylogeny reconstruction problems we study in this
+%   paper are constrained versions of the general Incomplete Directed
+%   Perfect  Phylogeny (IDP)~\cite{Peer_2004}.
+% The IDP problem asks for completing missing data in a binary matrix, where
+%   missing data are represented by the symbol $?$, in such a way that the
+%   completed matrix is explained by a perfect phylogeny.
+% More precisely, the input data is an $n\times m$ matrix $M_{?}$, where
+%   $M_{?}(i,j)\in \{0,1,?\}$ represents the absence, presence or
+%   uncertainty of a character $j$ in the species $i$ respectively.
+% If a solution  exists, then it consists of changing  each $?$ into $0$
+%   or $1$  obtaining a new  binary matrix  $M_{s}$ that has  a directed
+%   perfect phylogeny. 
+
+First, we recall that a  well  known characterization  of perfect  phylogenies states
+that a \emph{complete}
+binary matrix $M$ has a directed perfect phylogeny if and only if
+it has  no \emph{conflicting}  pair of columns ---  two columns  are in
+conflict  if  they contain  all  three configurations  $(0,1)$,
+$(1,0), (1,1)$ --- inducing the so-called forbidden matrix.
+
+The ILP formulation on \emph{incomplete} matrices~\cite{Gusfield2007} essentially consists
+of introducing a binary variable for each missing entry, and describing a set of
+constraints towards the goal of minimizing the conflicting pairs. 
+
+To adapt this approach to persistent phylogenies~\cite{gusfield_persistent_2015}, we need 
+a property~\cite{Bonizzoni:2017:BPP:3107411.3107441}.
+
+\begin{proposition}
+  \label{proposition:extended matrix}
+  Let $M$ be an incomplete binary matrix.
+  Let $M_{e}$ be the (incomplete) matrix obtained from $M$ has follows:
+  for each entry $M[i,j]$ we have two entries $M_{e}[i,j^{+}]$ and
+$M_{e}[i,j^{-}]$ such that (1) if $M[i,j] = 1$ then $M_{e}[i,j^{+}] = 1$ and
+$M_{e}[i,j_{l}^{-}] = 0$ for $1\le l\le k$, (2) if $M[i,j] = 0$ then the entries
+$M_{e}[i,j^{+}]$, $ M_{e}[i,j_{l}^{-}]$ are all missing.
+Then $M$ has a completion $\bar{M}$ that has a Dollo$(k)$ phylogeny if and only if $M_{e}$
+has a completion $\bar{M_{e}}$ such that if $M(i,j)= 0$ then $M_{e}[i,j^{+}] = \sum_{l\le
+  k} M_{e}[i,j_{l}^{-}]$.
+\end{proposition}
+
+
+Our main contribution is combining the ILP formulation
+of~\cite{Bonizzoni:2017:BPP:3107411.3107441} with definition of tumor perfect phylogeny
+reconstruction from single-cell data, to obtain an ILP approach for tumor phylogeny
+reconstruction from single-cell data that incorporates mutation losses in the model.
+
+% This relation motivates the following definition~\cite{gusfield_persistent_2015}:
+
+%   \begin{definition}\label{def:MIDPP}
+%     Let $M_{e}$ be an incomplete binary matrix, and let 
+%     $\mathcal{R}=\{R_i(M_e)\le 0\}_{i\in [1,r]} $  be a set 
+%     of $r$ constraints on the entries of $M_e$.
+% %
+% Then the \emph{Modified Incomplete Directed Perfect Phylogeny Problem for the set}
+%     $\mathcal R$, denoted by MIDPP($M_e,\mathcal R$),  asks to find, if it exists,
+%      a completion of matrix $M_e$ which admits a Perfect Phylogeny and 
+%    satisfies all constraints in $\mathcal R$.
+% %
+%   \end{definition}
+
+
+% \section{The $\boldsymbol{\mathcal P}$ Incomplete Directed Phylogeny 
+%     Problem }
+%   \label{sec:ILP_general}
+
+% In  this section  we  develop  an ILP  formulation  for  the following  
+% problem:
+
+% \begin{definition}[${\mathcal P}$ Incomplete Directed Phylogeny 
+%     Problem]
+%   \label{definition:p-idpp}
+% Given a character-based phylogeny model $\mathcal P$ and an incomplete binary matrix
+% $M$, the ${\mathcal P}$ Incomplete Directed Phylogeny 
+% Problem, denoted by $\mathcal P$-IDP, asks for a
+% completion $M_{c}$ of $M$, such that $M_{c}$ admits a phylogeny $T$ under 
+%     the model $\mathcal P$, if such a completion exists.
+% %
+% \end{definition}
  
-A well  known characterization  of perfect  phylogenies states  that a
-  binary matrix $M_{s}$ has a directed perfect phylogeny if and only if
-  it has  no \emph{conflicting}  pair of columns ---  two columns  are in
-  conflict  if  they contain  all  three configurations  $(0,1)$,
-  $(1,0), (1,1)$ --- inducing the so-called forbidden matrix.
-The problem of  determining if a binary  matrix has a perfect  phylogeny, and to
-  compute  such  perfect  phylogeny  if possible,  has  a  linear-time
-  algorithm~\cite{Gusfield91,Gusfield}. 
-Interestingly, the IDP  problem has an efficient solution  given by an
-  $O(mn\log^{2}(m+n))$-time algorithm~\cite{Peer_2004} when the
-  phylogeny is directed, that  is the root is known (and  is the all $0$s
-  vector), otherwise,  the problem of  deciding whether there  exists an
-  unrooted    solution   of    the    incomplete    input   matrix    is
-  NP-complete~\cite{steel1992complexity}.
-There exists an ILP formulation for variants  of the IDP problem, where the main
-  question is to complete missing data in an input matrix on $\{0,1,?\}$ with the
-  goal of minimizing the conflicting pairs \cite{Gusfield2007}. 
-Since finding  a perfect phylogeny is  easy, the main difficulty  in solving the
-  IDP problem consists of replacing each $?$ with a $0$ or a $1$ to minimize the
-  number of conflicting pairs of columns.
-%
-
-\subsection{The Persistent Perfect Phylogeny and the IDP}
-\label{sec:persistent-idp}
-Our    strategy   is    based   on    the   approach for the Persistent Phylogeny 
-  Problem~\cite{gusfield_persistent_2015}, that is  to decide if a binary matrix  has a
-  phylogeny obeying the Persistent model.  
-  The original formulation~\cite{gusfield_persistent_2015} is based on 
-  two main  properties:
-  \begin{enumerate}
-  \item \label{item:1} Any instance $M$ of the Persistent Phylogeny
-   Problem can be reduced to an instance of an equivalent Incomplete Directed Perfect
-    Phylogeny Problem on a matrix $M_e$, called
-    \emph{extended       matrix},      with       some      additional
-    constraints~\cite{BonizzoniBDT12}, 
-    so that $M$ has a Persistent Phylogeny if and only if $M_{e}$ has a perfect phylogeny.
-   \item \label{item:2} The Incomplete Directed Phylogeny problem can be stated 
-      as an ILP problem by minimizing the number of conflicts between 
-      characters~\cite{Gusfield2007} according  to the formulation  presented in
-      Section~\ref{sec:ilp}.
-  \end{enumerate}
-
-In the next section we extend this approach by generalizing the result
-  presented in~\cite{BonizzoniBDT12} in two different ways:
-First
-  we generalize the construction of the extended matrix to the Dollo($k$)
-  and Camin-Sokal($k$) models, also on incomplete  input matrices: this solves the
-  Incomplete  Directed  Phylogeny Problem  for the  aforementioned 
-  phylogenetic models.
-
-  % The later  result will allow  us to develop an  ILP formulation for  finding a
-  % Dollo($k$) or Camin-Sokal($k$)  tree representations for the  input matrix $M$
-  % of the $\mathcal P$ Phylogeny Reconstruction Problem. 
-  % Furthermore there exist a one to one relation between  minimal
-  % solutions of the MIDPP and feasible Persistent Perfect Phylogeny
-  % representations of the input matrix.   
-
-% Persistent Perfect Phylogeny model (PPP)~\cite{DBLP:journals-tcs-BonizzoniCDRT16,
-%   bonizzoni_explaining_2014,DBLP:journals-tcs-BonizzoniBDT12,
-%   gusfield_persistent_2015} is a well known phylogenetic model which
-% relaxes Perfect Phylogeny conditions by allowing back mutations. 
-% In the Persistent model, as in  the Perfect Phylogeny, mutation can appears only
-% once in the entire evolutionary tree but characters are allowed to return back to the
-% ancestral state. 
-
-% The problem of deciding if an input binary matrix admits a Persistent model 
-% has               been               developed              in               the
-% literature.%~\cite{bonizzoni_explaining_2014,DBLP:journals-tcs-BonizzoniCDRT16, gusfield_persistent_2015}.
-% \notaestesa{MS}{add Polynomial algo?}
-% Specifically, in~\cite{DBLP:journals-tcs-BonizzoniCDRT16} an exact algorithm
-% for the PPP is proposed which is exponential in the
-% number $m$  of characters, but  polynomial in the number  $n$ of species  of the
-% input matrix. 
-% In~\cite{bonizzoni_explaining_2014} the authors deal  with a constrained version
-% of the  model in which  some species and  its ancestors can  not have a  list of
-% given characters.  
-
-% In~\cite{BonizzoniBDT12}  the  authors prove  that  every  PPP instance  can  be
-% restated as a constrained IDP problem.%~\cite{BonizzoniBDT12}.  
-In the following we detail the construction proposed in~\cite{BonizzoniBDT12}
-to reduce the Persistent Phylogeny Problem to an equivalent IDP instance.
-%\notaestesa{paola}{modificato per renderlo coerente con il resto}
-Given a (complete) binary matrix $M$, they propose an IDP problem
-on an (incomplete) extended 
-matrix $M_{e}$ where each entry $M(i,j)$ is replaced by two entries $M_{e}(i,j^{+})$ and
-$M_{e}(i,j^{-})$ as follows: if $M(i,j)= 1$ then $M_{e}(i,j^{+}) = 1$ and
-$M_{e}(i,j^{-}) = 0$,  if $M(i,j)= 0$ then $M_{e}(i,j^{+}) = M_{e}(i,j^{-}) = ?$.
-Given the extended matrix $M_{e}$ as input, then the former matrix $M$
-admits a  Persistent Perfect Phylogeny  solution if there exists a binary
-matrix $M_s$ obtained  by completing the entries of  $M_{e}$ such that
-for each pair $(M_{e}(i,j^{+}), M_{e}(i,j^{-}))$ of $?$ entries, 
- their corresponding entries in the matrix $M_{s}$ are equal, that is
- $M_{e}(i,j^{+}) = M_{e}(i,j^{-})$. 
-Intuitively,  the  matrix  $M_{e}$  corresponds to  duplicating  each  column  $j$
-associated to a character $c$ into two columns $j^{+}, j^{-}$ corresponding to
-characters  $c^{+}, c^{-}$,  being  $c^{+}$  the gain  of  character $c$  during
-evolution and $c^{-}$ the loss of character $c$ (in this case, $c$ is a persistent
-character). 
-Clearly, an entry $M(i,j)= 1$ means that the character $c$ cannot be persistent, hence in
-the row $i$ of $M_s$ it holds that $c^+$ is $1$ and $c^-$ is $0$.
-%
-Differently, an  entry $M(i,j)= 0$ can  be explained in two  ways, either with
-the persistency of $c$,  that is the row $i$ posses both  characters $c^+$ and $c^-$
-(both columns  have  values $1$ in row $i$) or $c$ does  not occur in species row
-$i$, meaning that the row $i$ does not  have characters $c^+$ nor $c^-$ (both columns
-have values $0$ in row $i$).
-This relation motivates the following definition~\cite{gusfield_persistent_2015}:
-
-  \begin{definition}\label{def:MIDPP}
-    Let $M_{e}$ be an incomplete binary matrix, and let 
-    $\mathcal{R}=\{R_i(M_e)\le 0\}_{i\in [1,r]} $  be a set 
-    of $r$ constraints on the entries of $M_e$.
-%
-Then the \emph{Modified Incomplete Directed Perfect Phylogeny Problem for the set}
-    $\mathcal R$, denoted by MIDPP($M_e,\mathcal R$),  asks to find, if it exists,
-     a completion of matrix $M_e$ which admits a Perfect Phylogeny and 
-   satisfies all constraints in $\mathcal R$.
-%
-  \end{definition}
-
-Since the resulting variant of the IDP problem includes some additional constraints, it is  difficult 
-to adapt the algorithm proposed in~\cite{Peer_2004}. 
-Instead, we follow the approach proposed by Gusfield 
-in~\cite{gusfield_persistent_2015}, where  
-the restricted IDP is formulated as an ILP. 
-If all constraints in $\mathcal R$ can be
-  expressed as linear constraints on the matrix entries, then
-  the problem MIDPP($M, \mathcal R$) admits an ILP formulation.
-  The formulation can be obtained by
-  simply adding  the set of linear constraints $\mathcal R$ to the former
-  ILP formulation presented in Section~\ref{sec:ilp}.
-
-  % Therefore, in the following we show the construction of the extended matrices and
-  %  the set of  constraints for  Dollo$(k)$  and  Camin-Sokal$(k)$ models.  
-
-% Finally,  as  proposed  in~\cite{gusfield_persistent_2015}  we  can  stated  the
-% Persistent Phylogeny Reconstruction Problem as follows:
-% $
-% \min\sum_{(p,q)}C(p,q)\;\text{         s.t.}\;\eqref{eq:B},        \eqref{eq:C},
-% \{Y(i,j_1)=Y(i,j_2): M(i,j]=0\}.
-% $
-
-% Similarly, it is possible to address the problem of finding a completion with the 
-% minimal number
-% of conflicts  by considering the solution
-% of the following minimization problem:
-% $\min\sum_{(p,q)}C(p,q)\;\text{ s.t.}\;(\ref{eq:B})$, and $(\ref{eq:C})$.
-
-% Hence, we can state the Dollo($k$) (Camin-Sokal($k$)) phylogeny reconstruction 
-% problem as any feasible solution of the set of constraints
-% (\ref{eq:B}),~(\ref{eq:C=0}) and $\mathcal R_{D(k)}$ ( $\mathcal
-% R_{CS(k)}$).
-
-% Additionally, since the number of total  negated characters corresponds to
-% $N(M)=\sum_{j=1}^m\sum_{l=1}^k B(j^{+},j_l,1,1)$, we can state the
-% problem of finding a parsimony representation with the minimum number
-% % of characters as:
-% % $
-% % \min\sum_{(p,q)}C(p,q)\;\text{ s.t.}\;(\ref{eq:B}),~(\ref{eq:C}),
-% % \mathcal R_{\mathcal P} .
-% % $
-
-
-\section{The $\boldsymbol{\mathcal P}$ Incomplete Directed Phylogeny 
-    Problem }
-  \label{sec:ILP_general}
-
-In  this section  we  develop  an ILP  formulation  for  the following  
-problem:
-
-\begin{definition}[${\mathcal P}$ Incomplete Directed Phylogeny 
-    Problem]
-  \label{definition:p-idpp}
-Given a character-based phylogeny model $\mathcal P$ and an incomplete binary matrix
-$M$, the ${\mathcal P}$ Incomplete Directed Phylogeny 
-Problem, denoted by $\mathcal P$-IDP, asks for a
-completion $M_{c}$ of $M$, such that $M_{c}$ admits a phylogeny $T$ under 
-    the model $\mathcal P$, if such a completion exists.
-%
-\end{definition}
- 
-Notice that if all entries of the input matrix $M$ are
-known,  then the  problem corresponds  to deciding  if $M$  admits a phylogeny
-under the model $\mathcal P$.  
-In this paper we focus on Dollo($k$) and Camin-Sokal($k$).
-As  we have  already  mentioned, we  proceed by  reducing  the $\mathcal  P$-IDP
-on an instance $M$ to an equivalent MIDPP($M_e$,$\mathcal R_M$) instance where 
-$M_e$  is a  related extended  matrix  and $\mathcal  R_M$  is a  set of  linear
-restrictions. The later problem can thus be restated as an ILP. 
+% Notice that if all entries of the input matrix $M$ are
+% known,  then the  problem corresponds  to deciding  if $M$  admits a phylogeny
+% under the model $\mathcal P$.  
+% In this paper we focus on Dollo($k$) and Camin-Sokal($k$).
+% As  we have  already  mentioned, we  proceed by  reducing  the $\mathcal  P$-IDP
+% on an instance $M$ to an equivalent MIDPP($M_e$,$\mathcal R_M$) instance where 
+% $M_e$  is a  related extended  matrix  and $\mathcal  R_M$  is a  set of  linear
+% restrictions. The later problem can thus be restated as an ILP. 
   
-\subsection{The Dollo($\boldsymbol{k}$)-IDP} 
-\label{sec:ilp_Dollo}
+% \subsection{The Dollo($\boldsymbol{k}$)-IDP} 
+% \label{sec:ilp_Dollo}
 
-  \subsubsection{Extended        Matrix        and        Constraints        for
-    Dollo$(k)$}\label{sec:dollok_M}
+%   \subsubsection{Extended        Matrix        and        Constraints        for
+%     Dollo$(k)$}\label{sec:dollok_M}
 
-The results in this section are from~\cite{Bonizzoni:2017:BPP:3107411.3107441}.
+% The results in this section are from~\cite{Bonizzoni:2017:BPP:3107411.3107441}.
 
   
-Let  $M$ be a binary (incomplete) matrix with $n$ rows (species) and $m$ characters.  
-The extended matrix $M_{D(k)}$ for the Dollo($k$) model is defined as
-follows:  
-\begin{itemize}
-  \item $M_{D(k)}$ has $n$ rows and  $m\times(k+1)$ columns, where each
-    character $j$ of matrix $M$ is associated to $k+1$ columns in  $M_{D(k)}$
-    denoted by  $j^{+},j^{-}_1,\ldots,j^{-}_{k}$. 
-  \item If $M(i,j)=1$
-    then $M_{D(k)}(i,j^{+})=1$ and $M_{D(k)}(i,j^{-}_l)=0,\, l\in [1,k]$.
-  \item If  $M(i,j)=0$ or  $M(i,j)=?$ then $M_{D(k)}(i,j^{+})=?$ and
-    $M_{D(k)}(i,j^{-}_l)=?$  for each  $l \in [0,k]$. 
-  \end{itemize}
+% Let  $M$ be a binary (incomplete) matrix with $n$ rows (species) and $m$ characters.  
+% The extended matrix $M_{D(k)}$ for the Dollo($k$) model is defined as
+% follows:  
+% \begin{itemize}
+%   \item $M_{D(k)}$ has $n$ rows and  $m\times(k+1)$ columns, where each
+%     character $j$ of matrix $M$ is associated to $k+1$ columns in  $M_{D(k)}$
+%     denoted by  $j^{+},j^{-}_1,\ldots,j^{-}_{k}$. 
+%   \item If $M(i,j)=1$
+%     then $M_{D(k)}(i,j^{+})=1$ and $M_{D(k)}(i,j^{-}_l)=0,\, l\in [1,k]$.
+%   \item If  $M(i,j)=0$ or  $M(i,j)=?$ then $M_{D(k)}(i,j^{+})=?$ and
+%     $M_{D(k)}(i,j^{-}_l)=?$  for each  $l \in [0,k]$. 
+%   \end{itemize}
 
-For a character $j$, the column $j^{+}$ represents the acquisition of
-  character $j$ while each of the  $j^{-}_{1} \cdots j^{-}_{k}$ columns represents a
-  possible loss of the gained character.
-If  $M(i,j)=1$, then it is  not possible for species $i$ to lose the
-character $j$, thus the  only possible  configuration is  $M_{D(k)}(i,j^{+})=1$ and
-$M_{D(k)}(i,j^{-}_l)=0,\, l\in [1,k]$. 
-Otherwise, if $M(i,j)=0$ then the character has either (1) never been acquired, or (2) been
-acquired, then lost along the path from the root to the species $i$ of any solution.
-%
-Therefore $ \sum_{1\le l\le
-  k}M_{D(k)}(i,j^{-}_l)=M_{D(k)}(i,j^{+})$. 
+% For a character $j$, the column $j^{+}$ represents the acquisition of
+%   character $j$ while each of the  $j^{-}_{1} \cdots j^{-}_{k}$ columns represents a
+%   possible loss of the gained character.
+% If  $M(i,j)=1$, then it is  not possible for species $i$ to lose the
+% character $j$, thus the  only possible  configuration is  $M_{D(k)}(i,j^{+})=1$ and
+% $M_{D(k)}(i,j^{-}_l)=0,\, l\in [1,k]$. 
+% Otherwise, if $M(i,j)=0$ then the character has either (1) never been acquired, or (2) been
+% acquired, then lost along the path from the root to the species $i$ of any solution.
+% %
+% Therefore $ \sum_{1\le l\le
+%   k}M_{D(k)}(i,j^{-}_l)=M_{D(k)}(i,j^{+})$. 
 
-Finally, if $M(i,j)=?$, that is the entry of $M$ is missing,  we must allow both the
-constraints for the case $M(i,j)=0$ as well as $M(i,j)=1$.
-%
-% consider both of the aforementioned relations,
-% that is $(M_{D(k)}(i,j^{+})=1 \wedge \sum_{1\le l\le
-%   k}M_{D(k)}(i,j^{-}_l)=0) \vee (\sum_{1\le l\le
-%   k}M_{D(k)}(i,j^{-}_l)=M_{D(k)}(i,j^{+}))$. 
-We capture both cases with with following relation
-between the entries of the extended matrix:
-$ 0\le M_{D(k)}(i,j^{+}) - \sum_{1\le l\le k}M_{D(k)}(i,j^{-}_l)\le 1$.
-Our previous discussion  leads to the  following set  of constraints for  the matrix
-$M_{D(k)}$:
-%\begin{equation}\label{eq:R_Dk}
-% \medmuskip=0mu
-% \thinmuskip=0mu
-% \thickmuskip=0mu
-%\scalebox{.9}{
-{\small \begin{align} \label{eq:R_Dk}
-&\mathcal{R}_{D(k)}(M)=\left\{\sum\limits_{1\le l\le k}M_{D(k)}(i,j^{-}_l)=
-  M_{D(k)}(i,j^{+})\right\}_{(i,j): M(i,j)=0} \nonumber\\
-&\quad \cup \left\{0 \le\sum\limits_{1\le l\le k}M_{D(k)}(i,j^{-}_l)-
-  M_{D(k)}(i,j^{+})\le 1\right\}_{(i,j): M(i,j)=?}
-\end{align}
-}  
-%\end{equation}
+% Finally, if $M(i,j)=?$, that is the entry of $M$ is missing,  we must allow both the
+% constraints for the case $M(i,j)=0$ as well as $M(i,j)=1$.
+% %
+% % consider both of the aforementioned relations,
+% % that is $(M_{D(k)}(i,j^{+})=1 \wedge \sum_{1\le l\le
+% %   k}M_{D(k)}(i,j^{-}_l)=0) \vee (\sum_{1\le l\le
+% %   k}M_{D(k)}(i,j^{-}_l)=M_{D(k)}(i,j^{+}))$. 
+% We capture both cases with with following relation
+% between the entries of the extended matrix:
+% $ 0\le M_{D(k)}(i,j^{+}) - \sum_{1\le l\le k}M_{D(k)}(i,j^{-}_l)\le 1$.
+% Our previous discussion  leads to the  following set  of constraints for  the matrix
+% $M_{D(k)}$:
+% %\begin{equation}\label{eq:R_Dk}
+% % \medmuskip=0mu
+% % \thinmuskip=0mu
+% % \thickmuskip=0mu
+% %\scalebox{.9}{
+% {\small \begin{align} \label{eq:R_Dk}
+% &\mathcal{R}_{D(k)}(M)=\left\{\sum\limits_{1\le l\le k}M_{D(k)}(i,j^{-}_l)=
+%   M_{D(k)}(i,j^{+})\right\}_{(i,j): M(i,j)=0} \nonumber\\
+% &\quad \cup \left\{0 \le\sum\limits_{1\le l\le k}M_{D(k)}(i,j^{-}_l)-
+%   M_{D(k)}(i,j^{+})\le 1\right\}_{(i,j): M(i,j)=?}
+% \end{align}
+% }  
+% %\end{equation}
 
-By an abuse of the notation it is possible to describe all restriction for the problem as:
-\begin{equation}\label{eq:Dk2}
-  M_{D(k)}(i,j^{+}) - \sum_{1\le l\le k}M_{D(k)}(i,j^{-}_l)= M(i,j),
-\end{equation}
-where the case $M(i,j)=?$ is interpreted as $M_{D(k)}(i,j^{+}) - \sum_{1\le l\le k}M_{D(k)}(i,j^{-}_l)\in \{0,1\} $.
+% By an abuse of the notation it is possible to describe all restriction for the problem as:
+% \begin{equation}\label{eq:Dk2}
+%   M_{D(k)}(i,j^{+}) - \sum_{1\le l\le k}M_{D(k)}(i,j^{-}_l)= M(i,j),
+% \end{equation}
+% where the case $M(i,j)=?$ is interpreted as $M_{D(k)}(i,j^{+}) - \sum_{1\le l\le k}M_{D(k)}(i,j^{-}_l)\in \{0,1\} $.
 
-When  the  context  is  clear,  we  will denote  this  set  of  restrictions  as
-$\mathcal{R}_{D(k)}$. 
-Figure~\ref{fig:M_e} shows an example of the input matrix and its
-corresponding extended matrix.
+% When  the  context  is  clear,  we  will denote  this  set  of  restrictions  as
+% $\mathcal{R}_{D(k)}$. 
+% Figure~\ref{fig:M_e} shows an example of the input matrix and its
+% corresponding extended matrix.
 
-\begin{theorem}\label{theorem:dollok}
-  Let $M$ be an incomplete binary matrix, and let MIDPP$\left(M_{D(k)},\mathcal
-    R_{D(k)}(M)\right)$ be the corresponding incomplete instance in the 
-  extended matrix $M_{D(k)}$.
-%
-Then there exist a completion $M_{c}$ of $M$ satisfying the Dollo($k$) model if
-and only if MIDPP$\left(M_{D(k)},\mathcal R_{D(k)}(M)\right)$ admits a solution.
+% \begin{theorem}\label{theorem:dollok}
+%   Let $M$ be an incomplete binary matrix, and let MIDPP$\left(M_{D(k)},\mathcal
+%     R_{D(k)}(M)\right)$ be the corresponding incomplete instance in the 
+%   extended matrix $M_{D(k)}$.
+% %
+% Then there exist a completion $M_{c}$ of $M$ satisfying the Dollo($k$) model if
+% and only if MIDPP$\left(M_{D(k)},\mathcal R_{D(k)}(M)\right)$ admits a solution.
 
-Moreover, from  any Dollo($k$) completions  $M_{c}$ it is possible to  obtain a
-solution of MIDPP$\left(M_{D(k)},\mathcal R_{D(k)}(M)\right)$ and vice versa.
-\end{theorem}
+% Moreover, from  any Dollo($k$) completions  $M_{c}$ it is possible to  obtain a
+% solution of MIDPP$\left(M_{D(k)},\mathcal R_{D(k)}(M)\right)$ and vice versa.
+% \end{theorem}
 
 
 \begin{figure}[tb!]
@@ -611,9 +515,10 @@ In the tree, boldfaced character corresponds to changes between each node and it
 
 \subsection{The ILP formulation}
 \label{sec:ilp}
-In this section we revisit the ILP formulation proposed~\cite{Gusfield2007} for the IDP problem.
-%
-The input of the problem is an incomplete $n\times m$ matrix $M$.
+In this section we present our ILP formulation for the tumor phylogeny reconstruction from
+single-cell data.
+
+We recall that the input of the problem is an incomplete matrix $I$.
 More precisely, we have a set of binary variables $M(c,m)$ such that $M(c,m)=1$ if cell
 $c$ has (according to the input data) the mutation $m$, while $M(c,m)=0$ if cell
 $c$ does not have (according to the input data) the mutation $m$.

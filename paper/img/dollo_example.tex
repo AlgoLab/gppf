@@ -10,7 +10,6 @@
 \usetikzlibrary{external}
 \tikzexternalize
 
-
 \begin{document}
 
 \tikzset{
@@ -25,45 +24,45 @@
   level distance = 1cm},
 level 1/.style={sibling distance=1.7cm}] 
 \node [arn_n] {$a$}
-    child{ node [arn_n] {$b$} 
-            child{ node [arn_n] {$c$} 
-            	child{ node [arn_x] {$s_1$} edge from parent [dashed] node[above left]{}}
-                         %{$x$}} %for a named pointer
-%							child{ node [arn_x] {}}
-            }
-            child{ node [arn_n] {$d$}
-							child{ node [arn_r] {$b-$}
-									child{ node [arn_n] {$d-$}
-											child{ node [arn_r] {$d-$}
-														child{ node [arn_x] {$s_2$} edge from parent [dashed]}									
-											}									
-									}
-							}		
-							child{ node [arn_r] {$a-$}
-												child{ node [arn_n] {$f$}
-														child{ node [arn_x] {$s_3$} edge from parent [dashed]}	}								
-						}
-            }                            
+child{ node [arn_n] {$b$} 
+  child{ node [arn_n] {$c$} 
+    child{ node [arn_x] {$s_1$} edge from parent [dashed] node[above left]{}}
+    % {$x$}} %for a named pointer
+    % child{ node [arn_x] {}}
+  }
+  child{ node [arn_n] {$d$}
+    child{ node [arn_r] {$b-$}
+      child{ node [arn_n] {$d-$}
+        child{ node [arn_r] {$d-$}
+          child{ node [arn_x] {$s_2$} edge from parent [dashed]}									
+        }									
+      }
+    }		
+    child{ node [arn_r] {$a-$}
+      child{ node [arn_n] {$f$}
+        child{ node [arn_x] {$s_3$} edge from parent [dashed]}	}								
     }
-    child{ node [arn_n] {$h$}
-            child{ node [arn_x] {$s_4$} edge from parent [dashed]}            
-		}
+  }                            
+}
+child{ node [arn_n] {$h$}
+  child{ node [arn_x] {$s_4$} edge from parent [dashed]}            
+}
 ; 
 \end{scope}
-\begin{scope}[yshift=-100,xshift=110]
-    \matrix(dict)[matrix of nodes,%below=of game,
-        nodes={align=center,text width=.3cm},
-        row 1/.style={anchor=south},
-        column 1/.style={nodes={text width=0.4cm,align=right}}
-    ]{
-            -  & $a$ & $b$ & $c$ & $d$ & $e$ & $f$ & $g$  \\ 
-            $s_1$ & 1 & 1 & 1 & 0 & 0 & 0 & 0 \\
-            $s_2$ & 1 & 0 & 0 & 0 & 1 & 0 & 0 \\
-            $s_3$ & 0 & 1 & 0 & 1 & 0 & 1 & 0 \\
-            $s_4$ & 1 & 0 & 0 & 0 & 0 & 0 & 1\\
-    };
-    \draw(dict-1-1.south west)--(dict-1-8.south east);
-    \draw(dict-1-1.north east)--(dict-5-1.south east);%       \matrix (PPP) [matrix of nodes,
-\end{scope}
+% \begin{scope}[yshift=-100,xshift=110]
+%     \matrix(dict)[matrix of nodes,%below=of game,
+%         nodes={align=center,text width=.3cm},
+%         row 1/.style={anchor=south},
+%         column 1/.style={nodes={text width=0.4cm,align=right}}
+%     ]{
+%             -  & $a$ & $b$ & $c$ & $d$ & $e$ & $f$ & $g$  \\ 
+%             $s_1$ & 1 & 1 & 1 & 0 & 0 & 0 & 0 \\
+%             $s_2$ & 1 & 0 & 0 & 0 & 1 & 0 & 0 \\
+%             $s_3$ & 0 & 1 & 0 & 1 & 0 & 1 & 0 \\
+%             $s_4$ & 1 & 0 & 0 & 0 & 0 & 0 & 1\\
+%     };
+%     \draw(dict-1-1.south west)--(dict-1-8.south east);
+%     \draw(dict-1-1.north east)--(dict-5-1.south east);%       \matrix (PPP) [matrix of nodes,
+% \end{scope}
 \end{tikzpicture}
 \end{document}
