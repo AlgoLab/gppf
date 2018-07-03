@@ -1,8 +1,8 @@
 \documentclass[a4paper,USenglish]{article}
- 
+
  \usepackage{microtype}%if unwanted, comment out or use option "draft"
  
- \usepackage{authblk}
+% \usepackage{authblk}
  
  %\pdfpagesattr{/CropBox [80 80 523 780]}
  \pdfoutput=1
@@ -25,7 +25,6 @@
  \usepackage{booktabs}
  \usepackage{mathcomp}
  \usepackage{ifdraft}
- \usepackage{standalone}
  \usepackage[external]{forest}
  
  % REMOVE BEFORE SUBMISSION - begin part
@@ -79,7 +78,6 @@
 \newtheorem{Example}{Example}[section]
 
 
-\begin{document}
 
 \title{Inferring Cancer Progression from Single-cell via ILP}
 \author{Simone Ciccolella \and   Mauricio Soto Gomez \and
@@ -87,6 +85,7 @@
   Gianluca Della Vedova \and
   Iman Hajirasouliha \and
   Paola Bonizzoni}
+\begin{document}
 % \address{$^{1}$Department of Computer Science, Systems and Communication, Univ. Milano-Bicocca, Milan, Italy\\
 % $^{2}$Institute for Computational Biomedicine, Department of Physiology and Biophysics, Weill Cornell Medicine of Cornell University, NY, USA\\
 % $^{3}$Englander Institute for Precision Medicine, The Meyer Cancer Center, Weill Cornell Medicine, NY, US}
@@ -94,10 +93,11 @@
 \maketitle
 
 \begin{abstract}
-\textbf{Motivation:} In recent years, the well-known Infinite Sites Assumption (ISA) has been a fundamental feature of computational methods devised for reconstructing tumor phylogenies and inferring cancer progression. However, recent studies leveraging Single Cell Sequencing (SCS) techniques have shown evidence of widespread recurrence and loss of mutations in several tumor samples, an observation which essentially violates a strict ISA (\eg,~\cite{Kuipers13102017}).\\
-\textbf{Results:} We present the \texttt{SASC} (Simulated Annealing Single Cell inference) tool, a new model and robust framework based on simulated annealing for the inference of cancer progression from SCS data.
-	Our main objective is to overcome the limitations of the Infinite Sites Assumption by introducing a version of the Dollo parsimony model which indeed allows the deletion of mutations from the evolutionary history of the tumor. 
-	We demonstrate that \texttt{SASC} achieves high levels of accuracy when tested on both simulated and real data sets and in comparison with other available methods.\\
+\textbf{Motivation:} In recent years, the well-known Infinite Sites Assumption (ISA) has been a fundamental feature of computational methods devised for reconstructing tumor phylogenies and inferring cancer progression. However, recent studies leveraging Single Cell Sequencing (SCS) techniques have shown evidence of widespread recurrence and loss of mutations in several tumor samples, an observation which essentially violates a strict ISA (\eg~\cite{Kuipers13102017}).\\
+\textbf{Results:} TODO\\
+% We present the \texttt{SASC} (Simulated Annealing Single Cell inference) tool, a new model and robust framework based on simulated annealing for the inference of cancer progression from SCS data.
+% 	Our main objective is to overcome the limitations of the Infinite Sites Assumption by introducing a version of the Dollo parsimony model which indeed allows the deletion of mutations from the evolutionary history of the tumor. 
+% 	We demonstrate that \texttt{SASC} achieves high levels of accuracy when tested on both simulated and real data sets and in comparison with other available methods.\\
 \textbf{Availability:} The General Parsimony Phylogeny from Single-cell (\texttt{gpps})
 tool is open source and available at   \url{https://github.com/AlgoLab/gppf}.\\
 % \textbf{Contact:} \href{s.ciccolella@campus.unimib.it}{s.ciccolella@campus.unimib.it}
@@ -121,7 +121,7 @@ The Dollo model~\cite{Rogozin2006} is designed exactly for cases where stricter 
 
 Here we propose the Simulated Annealing Single Cell inference (\texttt{SASC}) tool, a maximum likelihood tree search framework that allows violations of the ISA, in the form of deletions of mutations, by incorporating the Dollo parsimony model~\cite{Farris_1977}.
 
-\section{Formulation of the tree reconstruction problem}
+\section{Tumor phylogeny reconstruction from single-cell data}
 As mentioned before, cancer progression reconstruction can be modeled as a
 character-based phylogeny reconstruction problem in which mutations
 are represented by the presence/absence of characters in different 
@@ -146,11 +146,11 @@ cells.
 \label{fig:dollo}
 \end{figure}
 
-The input is a ternary matrix $I_{c,m}$, where the entry $I_{c,m}=0$ indicates
-that the cell $c$ does not have the mutation $m$, while $I_{c,m}=1$ indicates that the
+The input is a binary incomplete matrix $I$, where the entry $I[c,m]=0$ indicates
+that the cell $c$ does not have the mutation $m$, while $I[c,m]=1$ indicates that the
 cell $c$ has the mutation $m$.
-Finally, $I_{c,m}=?$ indicates
-that there is not enough information on the presence/absence of mutation $m$ in cell $c$.
+Finally, we denote with $I[c,m]=?$ where there is not enough information on the
+presence/absence of mutation $m$ in cell $c$. 
 Uncertainty about the presence of a mutation in a cell is a consequence of insufficient coverage in the sequencing. 
 
 However, uncertainty is not the only issue in the sequencing process:
@@ -163,22 +163,22 @@ In this case,
 $\alpha$ denotes the false negative rate and $\beta$ denotes the false positive rate.
 In other words, for each pair $(c,m)$, 
 \begin{itemize}
-    \item $Pr(I_{c,m} = 0|P_{c,m} = 0) = 1- \beta$
-    \item $Pr(I_{c,m} = 1|P_{c,m} = 0) = \beta$
-    \item $Pr(I_{c,m} = 1|P_{c,m} = 1) = 1- \alpha$
-    \item $Pr(I_{c,m} = 0|P_{c,m} = 1) = \alpha$
+    \item $Pr(I[c,m] = 0|P[c,m] = 0) = 1- \beta$
+    \item $Pr(I[c,m] = 1|P[c,m] = 0) = \beta$
+    \item $Pr(I[c,m] = 1|P[c,m] = 1) = 1- \alpha$
+    \item $Pr(I[c,m] = 0|P[c,m] = 1) = \alpha$
 \end{itemize}
 
 Our goal is to find a matrix $P$ that (1) corresponds to a phylogeny on the set of cells,
 and (2) maximizes the the likelihood 
 $$
-Pr(I|P) = \prod_{m} \prod_{c} Pr(I_{c,m}|P_{c,m})
+Pr(I|P) = \prod_{m} \prod_{c} Pr(I[c,m] | P[c,m])
 $$
 of the observed matrix $I$~\cite{Jahn2016}.
 In other words, we attempt to maximize the likelihood of the observed matrix $I$~\cite{Jahn2016}.
 We point out that the values of the unknown entries of the input matrix 
 do not affect in the objective function.
-% Thus, $Pr(I_{c,m} = ?|P_{c,m} = 1) = Pr(I_{c,m} = ?|P_{c,m} = 0) = 1$.
+% Thus, $Pr(I[c,m] = ?|P[c,m] = 1) = Pr(I[c,m] = ?|P[c,m] = 0) = 1$.
 
 We recall that we are interested in the reconstruction of the evolutionary history 
 of the input cells, hence we focus only on matrices $P$ that correspond to a phylogeny on
@@ -218,14 +218,14 @@ It is important to notice that the ancestral order of mutations $c,a$ and $b$ is
 \label{fig:dollo_non_unique}
 \end{figure}
 
-We can express the likelihood of the matrix $E$ as: $P(I|E) = \prod_{i}^{n} \prod_{j}^{m} P(I_{ij} | D(T, \sigma_i)_j)$.
+We can express the likelihood of the matrix $E$ as: $Pr(I|P) = \prod_{c} \prod_{m} P(I[c,m] | P[c,m])$.
 Since the involved probabilities are in [0,1] it is convenient to move to a (linear) log-likelihood maximization objective function of the form:
 \begin{equation}
 \label{eq:log-likelihood}
-    \mbox{max } \sum_i^n \sum_j^m \log(P( I_{ij}| D(T, \sigma_i)_j))
+    \mbox{max } \sum_c \sum_m \log Pr\left( I[c,m] | E[c,m]\right)
 \end{equation}
 
-\subsection{Introduction of Dollo($k$) model}
+\subsection{The evolution model}
 \label{sec:intro_dollok}
 The Dollo parsimony rule can be interpreted as the impossibility of 
 having an identical mutation in the
@@ -257,9 +257,6 @@ the case of Perfect phylogeny.
 % When the number of cells, mutations and possible deletions increases, and with the noise caused by false calls and missing entries, this problem is greatly amplified, causing the number of different cancer progression phylogenies which equally explain the same input, to explode. A more complex example can be seen in Figure~\ref{fig:dollo_non_unique} where a different order of mutations and a different set of deletions can equally explain a given input.
 
 
-
-\subsection{The Incomplete Directed Perfect Phylogeny Problem}
-\label{sec:idpp}
 
 Testing if an incomplete matrix $P$ has a phylogeny under the Dollo($k$) model has been
 attacked via ILP for $k=0$~\cite{Gusfield2007}, $k=1$~\cite{gusfield_persistent_2015}, and
@@ -513,79 +510,115 @@ In the tree, boldfaced character corresponds to changes between each node and it
     \label{fig:M_e}
   \end{figure}
 
-\subsection{The ILP formulation}
+\section{The ILP formulation}
 \label{sec:ilp}
 In this section we present our ILP formulation for the tumor phylogeny reconstruction from
 single-cell data.
 
-We recall that the input of the problem is an incomplete matrix $I$.
-More precisely, we have a set of binary variables $M(c,m)$ such that $M(c,m)=1$ if cell
-$c$ has (according to the input data) the mutation $m$, while $M(c,m)=0$ if cell
+We recall that the input of the problem is an incomplete matrix $I$ represented as a set
+of binary variables $I(c,m)$ such that $I(c,m)=1$ if cell 
+$c$ has (according to the input data) the mutation $m$, while $I(c,m)=0$ if cell
 $c$ does not have (according to the input data) the mutation $m$.
 %
 Notice that the input data is incomplete, hence we can have pairs $(c,m)$ such that
-$M(c,m)$ is unspecified.
+the variable $I(c,m)$ does not exist.
 
 
 A similar set of variables is used for the extended matrix $E$.
-In fact, we have the variables $E(c,m^{+})$ and $E(c,m_{i}^{-})$ that encode the extended
+In fact, we have the variables $P(c,m^{+})$ and $P(c,m_{i}^{-})$ that encode the extended
 matrix $E$ that we want to find.
+Differently from the variable $I(\cdot,\cdot)$, for each pair $(c,m)$, the
+variables $P(c,m^{+})$ and $P(c,m_{i}^{-})$ exist.
+
+We introduce some auxiliary variables that help in making the ILP formulation easier to read.
+The binary variables $F(c,m)$ indicates if, in the predicted matrix, the cell $c$ has the
+mutation $m$.
+By Proposition~\ref{proposition:extended matrix}, $F(c,m)=1$ if and only if $P(c,m^{+})=1$
+and all $P(c,m_{i}^{-})$ are equal to zero.
+The real variables $w(c,m)$ represent the probability of $P(c,m)$ given $I(c,m)$.
+
+To establish if two columns are in conflict, we introduce the final binary variables 
+$B(p,q,a,b)$, which  are defined for each pair of columns $(p,q)$ and for each
+possible  pair  of  values  $(a,b)\in \{(0,1), (1,0), (1,1)\}$.
+More precisely, $B(p,q,a,b)$ indicates if for the (ordered) pair of columns $(p,q)$
+there  exists a cell $c$ where $P(c,p)=a$ and $P(c,q)=b$.
+Notice that two columns $p$ and $q$ are conflicting iff $B(p,q,0,1) + B(p,q,1,0) +
+B(p,q,1,1) = 3$.
+We are now ready to introduce our ILP formulation, where we use $C$ to denote the set of
+cells (\ie the rows of the input matrix $I$), $M$ to denote the mutations (\ie the columns
+of $I$), and $M^{*}$ to denote the set of possible mutation gains or losses.
 
 
-The goal is to decide if there exists a completion of the unknown
-entries  of $M$ resulting in
-a (complete) matrix  admitting a Perfect Phylogeny.
-The main  strategy of  this approach  is to state  the problem  as the
-  minimization of the conflicts between pairs of characters. 
-Thus, in virtue of the  Perfect Phylogeny Theorem, the IDP problem
-will have a solution if and only if the cost of the minimization problem
-is zero.  
-
-% In what follows, we  briefly explain the key elements of the  ILP and we discuss
-% the required changes for its use in the MIDPP problem.
 
 
 
-Since the objective is to determine if two columns are in conflict,
-  for every pair of columns $p,q$ we define a  binary variable $C(p,q)$
-  which indicates the existence of a conflict between these two columns.
-To establish if two columns are in conflict, we introduce the binary variables 
-   $B(p,q,a,b)$, which  are defined for each pair of columns $(p,q)$ and for each
-   possible  pair  of  values  $(a,b)\in \{0,1\}^2$.
-The variable $B(p,q,a,b)$ indicates if for the (ordered) pair of columns $(p,q)$
-  there  exists a cell $c$ where $E(c,p)=a$ and $E(c,q)=b$.
-Moreover, if there exist two cells $c_{1}$ and $c_{2}$ such that 
-  $E(c_{1},p)=a$ and $E(c_{2},q)=b$, then $B(p,q,a,b)=1$.
-
-For each pair $(p,q)$ of columns, for each pair $(a,b)\in
-\{(1,0),(0,1),(1,1)\} $, and for each cell $c$, the following set of inequalities 
-\begin{equation}\label{eq:B}
-   B(p,q,a,b)\ge 1-[a+(-1)^{a} E(c,p)]-[b+(-1)^{b}
-  E(c,q)]
-  \end{equation}
-  forces the variable $B(p,q,a,b)$ to be $1$ if and only if the columns $p,q$
-  exhibit the pair $(a,b)$ in some row $i$.
-
-Since we want phylogenies that correspond to extended matrices without conflicts,
-we  will  consider  the   following  alternative  form  of  the  previous
-constraint: 
-\begin{equation}\label{eq:C=0}
-   B(p,q,0,1) + B(p,q,1,0) + B(p,q,1,1)\le 2.  
-\end{equation}
-
-We denote with $w(c,m)$ the contribution of the cell $c$ and the mutation $m$ to the
-objective function.
-If $M(c,m)=1$, then $w(c,m) = \left(1 - \alpha\right) \left( E(c,m^{+}) - \sum_{i} E(c, m_{i}^{-}) \right)
-+  \beta \left( 1 - E(c,m^{+}) - \sum_{i} E(c, m_{i}^{-}) \right)$.
-Symmetrically, if  $M(c,m)=0$, then $w(c,m) = \alpha \left( E(c,m^{+}) - \sum_{i} E(c, m_{i}^{-}) \right)
-+  \left(1 - \beta\right) \left( 1 - E(c,m^{+}) - \sum_{i} E(c, m_{i}^{-}) \right)$.
+\begin{align}
+  \max \sum_{c\in C}\sum_{m\in M}\log w(c,m),\text{ subject to }&\notag\\
+  F(c,m) = P(c,m^{+}) - \sum_{i\le k} P(c, m_{i}^{-}) &\ \forall c\in C,\ m\in M\label{eq:def-F}\\
+  w(c,m) = \left(1 - \alpha\right) F(c,m) +  \beta \left( 1 - F(c,m) \right)\quad&\text{ if } I(c,m) = 1\label{eq:cost-FP}\\
+  w(c,m) = \alpha F(c,m) +  \left(1 - \beta\right) \left( 1 - F(c,m) \right)\quad&\text{ if } I(c,m) = 0\label{eq:cost-FN}\\
+  B(p,q,0,1)\ge P(c,q) - P(c,p) \quad&\ \forall c\in C,\ p,q\in M^{*}\label{eq:case-01}\\
+  B(p,q,1,0)\ge P(c,p) - P(c,q) \quad&\ \forall c\in C,\ p,q\in M^{*}\label{eq:case-10}\\
+  B(p,q,1,1)\ge P(c,p) + P(c,q) -1 \quad&\ \forall  c\in C,\ p,q\in M^{*}\label{eq:case-11}\\
+  B(p,q,0,1) + B(p,q,1,0) + B(p,q,1,1)\le 2  \quad&\forall  p,q\in M^{*}\label{eq:no-conflict}\\
+  B(\cdot,\cdot,\cdot,\cdot), F(\cdot,\cdot), P(\cdot,\cdot)&\in \{0,1\}\notag
+\end{align}
 
 
-The objective function that we want to maximize becomes:
-\begin{equation}
-\label{eq:log-likelihood-goal}
-    \mbox{max } \sum_c \sum_m \log w(c,m).
-\end{equation}
+% The goal is to decide if there exists a completion of the unknown
+% entries  of $I$ resulting in
+% a (complete) matrix  admitting a Perfect Phylogeny.
+% The main  strategy of  this approach  is to state  the problem  as the
+%   minimization of the conflicts between pairs of characters. 
+% Thus, in virtue of the  Perfect Phylogeny Theorem, the IDP problem
+% will have a solution if and only if the cost of the minimization problem
+% is zero.  
+
+% % In what follows, we  briefly explain the key elements of the  ILP and we discuss
+% % the required changes for its use in the MIDPP problem.
+
+
+
+% Since the objective is to determine if two columns are in conflict,
+%   for every pair of columns $p,q$ we define a  binary variable $C(p,q)$
+%   which indicates the existence of a conflict between these two columns.
+% To establish if two columns are in conflict, we introduce the binary variables 
+%    $B(p,q,a,b)$, which  are defined for each pair of columns $(p,q)$ and for each
+%    possible  pair  of  values  $(a,b)\in \{0,1\}^2$.
+% The variable $B(p,q,a,b)$ indicates if for the (ordered) pair of columns $(p,q)$
+%   there  exists a cell $c$ where $P(c,p)=a$ and $P(c,q)=b$.
+% Moreover, if there exist two cells $c_{1}$ and $c_{2}$ such that 
+%   $P(c_{1},p)=a$ and $P(c_{2},q)=b$, then $B(p,q,a,b)=1$.
+
+% For each pair $(p,q)$ of columns, for each pair $(a,b)\in
+% \{(1,0),(0,1),(1,1)\} $, and for each cell $c$, the following set of inequalities 
+% \begin{equation}\label{eq:B}
+%    B(p,q,a,b)\ge 1-[a+(-1)^{a} P(c,p)]-[b+(-1)^{b}
+%   P(c,q)]
+%   \end{equation}
+%   forces the variable $B(p,q,a,b)$ to be $1$ if and only if the columns $p,q$
+%   exhibit the pair $(a,b)$ in some row $i$.
+
+% Since we want phylogenies that correspond to extended matrices without conflicts,
+% we  will  consider  the   following  alternative  form  of  the  previous
+% constraint: 
+% \begin{equation}\label{eq:C=0}
+%    B(p,q,0,1) + B(p,q,1,0) + B(p,q,1,1)\le 2.  
+% \end{equation}
+
+% We denote with $w(c,m)$ the contribution of the cell $c$ and the mutation $m$ to the
+% objective function.
+% If $M(c,m)=1$, then $w(c,m) = \left(1 - \alpha\right) \left( P(c,m^{+}) - \sum_{i} P(c, m_{i}^{-}) \right)
+% +  \beta \left( 1 - P(c,m^{+}) - \sum_{i} P(c, m_{i}^{-}) \right)$.
+% Symmetrically, if  $M(c,m)=0$, then $w(c,m) = \alpha \left( P(c,m^{+}) - \sum_{i} P(c, m_{i}^{-}) \right)
+% +  \left(1 - \beta\right) \left( 1 - P(c,m^{+}) - \sum_{i} P(c, m_{i}^{-}) \right)$.
+
+
+% The objective function that we want to maximize becomes:
+% \begin{equation}
+% \label{eq:log-likelihood-goal}
+%     \mbox{max } \sum_c \sum_m \log w(c,m).
+% \end{equation}
 
 
 The  total  number of  variables  and  constraints  in  the formulation  are
