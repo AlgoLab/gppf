@@ -56,7 +56,7 @@ beta = float(args.falsepositive)
 #----------------------Initialize program----------------------#
 #Input frequency matrix
 #input_matrix, mutation_names = import_matrix_tab(args.file, args.model, args.k)
-input_matrix = import_trinary_matrix_tab(args.file)
+input_matrix = import_ternary_matrix_tab(args.file)
 matrix_name = os.path.basename(args.file).split('.')[0]
 
 #Fixed parameters
