@@ -1,3 +1,13 @@
+def import_ternary_matrix_tab(file_path):
+	with open(file_path, 'r') as fin:
+		m = []
+
+		for line in fin:
+			row = [int(x) for x in line.strip().split()]
+			m.append(row)
+			
+		return m
+
 def import_matrix_tab(file_path, type, k_model):
 	if '.sim' in file_path:
 		with open(file_path, 'r') as f_in:
