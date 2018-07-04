@@ -331,7 +331,7 @@ with open('{0}.ilp.out'.format(outfile), 'w+') as file_out:
 if model.status == GRB.Status.OPTIMAL or model.status == GRB.Status.TIME_LIMIT:
 	value = float(model.objVal) + n_zeros * l_beta + n_ones * lbeta
 	with open('{0}.ilp.log'.format(outfile), 'w+') as file_out:
-		file_out.write('Optimal likelihood: %d\n' % value)
+		file_out.write('Optimal likelihood: %f\n' % value)
 	
 	names = []
 	matrix = np.array(matrix)
