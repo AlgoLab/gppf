@@ -141,6 +141,7 @@ for row_index, row in enumerate(input_matrix):
                                                         name='FP{0}-{1}'.format(row_index, col_index))
                 model.addConstr(FP[row_index][col_index] == 1 - P[row_index][names[0]],
                                 name='constr_FP{0}-{1}'.format(row_index, col_index))
+            model.update()
             model.addConstr(F[row_index][col_index] == 1 - fminus[row_index][col_index],
                             name='constr_def_fminus{0}-{1}'.format(row_index, col_index))
             model.addConstr(F[row_index][col_index] == P[row_index][names[0]] - quicksum(P[row_index][name] for name in names[1:]),
