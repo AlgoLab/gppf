@@ -79,7 +79,8 @@
 
 
 
-\title{Inferring Cancer Progression from Single-cell via ILP}
+\title{\texttt{gpps}: An ILP-based approach for Inferring Cancer Progression with Mutation Losses
+  from Single cell data}
 \author{Simone Ciccolella \and   Mauricio Soto Gomez \and
   Murray Patterson \and
   Gianluca Della Vedova \and
@@ -93,12 +94,16 @@
 \maketitle
 
 \begin{abstract}
-\textbf{Motivation:} In recent years, the well-known Infinite Sites Assumption (ISA) has been a fundamental feature of computational methods devised for reconstructing tumor phylogenies and inferring cancer progression. However, recent studies leveraging Single Cell Sequencing (SCS) techniques have shown evidence of widespread recurrence and loss of mutations in several tumor samples, an observation which essentially violates a strict ISA (\eg~\cite{Kuipers13102017}).\\
-\textbf{Results:} TODO\\
-% We present the \texttt{SASC} (Simulated Annealing Single Cell inference) tool, a new model and robust framework based on simulated annealing for the inference of cancer progression from SCS data.
-% 	Our main objective is to overcome the limitations of the Infinite Sites Assumption by introducing a version of the Dollo parsimony model which indeed allows the deletion of mutations from the evolutionary history of the tumor. 
-% 	We demonstrate that \texttt{SASC} achieves high levels of accuracy when tested on both simulated and real data sets and in comparison with other available methods.\\
-\textbf{Availability:} The General Parsimony Phylogeny from Single-cell (\texttt{gpps})
+\textbf{Motivation:} In recent years, the well-known Infinite Sites Assumption (ISA) has
+been a fundamental feature of computational methods devised for reconstructing tumor
+phylogenies and inferring cancer progression where mutations are accumulated through
+histories.
+However, some recent studies leveraging Single Cell Sequencing (SCS) techniques have shown
+evidence of mutation losses in several tumor samples~\cite{Kuipers13102017}, making the inference problem harder.\\
+\textbf{Results:}
+We present a new tool, \texttt{gpps}, that uses reconstructs a tumor phylogeny from single
+cell data, allowing each mutation to be lost at most a fixed number of times.\\
+\textbf{Availability:} The General Parsimony Phylogeny from Single cell (\texttt{gpps})
 tool is open source and available at   \url{https://github.com/AlgoLab/gppf}.\\
 % \textbf{Contact:} \href{s.ciccolella@campus.unimib.it}{s.ciccolella@campus.unimib.it}
 %\textbf{Supplementary information:} Supplementary data are available at \textit{Bioinformatics}online.}
@@ -121,11 +126,12 @@ The Dollo model~\cite{Rogozin2006} is designed exactly for cases where stricter 
 
 Here we propose the Simulated Annealing Single Cell inference (\texttt{SASC}) tool, a maximum likelihood tree search framework that allows violations of the ISA, in the form of deletions of mutations, by incorporating the Dollo parsimony model~\cite{Farris_1977}.
 
-\section{Tumor phylogeny reconstruction from single-cell data}
-As mentioned before, cancer progression reconstruction can be modeled as a
-character-based phylogeny reconstruction problem in which mutations
-are represented by the presence/absence of characters in different 
-cells.
+\section{Tumor phylogeny reconstruction from single cell data}
+
+In the most abstract formulation, we can see the cancer progression reconstruction problem
+as a
+character-based phylogeny reconstruction problem~\cite{Gusfield} where each character
+represents  the presence/absence of a specific mutation in a cell.
 
 
 \begin{figure}[tb!]
@@ -146,12 +152,14 @@ cells.
 \label{fig:dollo}
 \end{figure}
 
-The input is a binary incomplete matrix $I$, where the entry $I[c,m]=0$ indicates
+The input of the problem is a binary incomplete matrix $I$, where the entry $I[c,m]=0$ indicates
 that the cell $c$ does not have the mutation $m$, while $I[c,m]=1$ indicates that the
 cell $c$ has the mutation $m$.
 Finally, we denote with $I[c,m]=?$ where there is not enough information on the
 presence/absence of mutation $m$ in cell $c$. 
-Uncertainty about the presence of a mutation in a cell is a consequence of insufficient coverage in the sequencing. 
+We recall that uncertainty about the presence of a mutation in a cell is a consequence of
+insufficient coverage in the sequencing, hence it is unavoidable.
+
 
 However, uncertainty is not the only issue in the sequencing process:
 the input matrix $I$ also contains false positives and false negatives. 
@@ -175,18 +183,16 @@ $$
 Pr(I|P) = \prod_{m} \prod_{c} Pr(I[c,m] | P[c,m])
 $$
 of the observed matrix $I$~\cite{Jahn2016}.
-In other words, we attempt to maximize the likelihood of the observed matrix $I$~\cite{Jahn2016}.
+In other words, we want to find the phylogeny, as expressed by the matrix $P$, that
+maximizes the likelihood of the observed matrix $I$~\cite{Jahn2016}.
 We point out that the values of the unknown entries of the input matrix 
 do not affect in the objective function.
 % Thus, $Pr(I[c,m] = ?|P[c,m] = 1) = Pr(I[c,m] = ?|P[c,m] = 0) = 1$.
 
-We recall that we are interested in the reconstruction of the evolutionary history 
-of the input cells, hence we focus only on matrices $P$ that correspond to a phylogeny on
-the cells.
 
-A phylogeny is a rooted labeled tree $T$, where the label set corresponds to the set of mutations.
-The state of a leaf $x$ is defined as the set of 
-labels in the path from $x$ the root.
+A phylogeny is a rooted labeled tree $T$, where the label set corresponds to the set of
+mutations gains and losses.
+The state of a leaf $x$ is defined as the set of mutations that are acquired and not lost in the path from $x$ the root.
 Moreover, the state of $x$ is naturally
 represented by a binary vector, denoted by $\lambda(x)$, such that $\lambda(x)[m]=1$ if and
 only if the node $x$ contains the mutation $m$, and $\lambda(x)[m]=0$ otherwise.
@@ -195,7 +201,7 @@ We say that the tree $T$ encodes a matrix $P$
 if there exists a mapping $\sigma$ of the rows  of $P$
 to the leaves of $T$ such that for each row $r$ of $P$, $r=\lambda(\sigma(r))$,
 where $\sigma(r)$ denotes the leaf of $T$ associated with $r$ through $\sigma$.
-In other words, in the tree $T$ we assume that cell $c$ has been extracted from the
+In other words, in the tree $T$ we assume that the cell $c$ has been extracted from the
 subpopulation $\sigma(c)$.
 
 \begin{figure}[!tb]
@@ -262,7 +268,7 @@ Testing if an incomplete matrix $P$ has a phylogeny under the Dollo($k$) model h
 attacked via ILP for $k=0$~\cite{Gusfield2007}, $k=1$~\cite{gusfield_persistent_2015}, and
 for general $k$~\cite{Bonizzoni:2017:BPP:3107411.3107441}.
 We will exploit the latter formulation to describe an ILP approach for tumor phylogeny
-reconstruction from single-cell data.
+reconstruction from single cell data.
 
 % The character-based phylogeny reconstruction problems we study in this
 %   paper are constrained versions of the general Incomplete Directed
@@ -294,21 +300,21 @@ a property~\cite{Bonizzoni:2017:BPP:3107411.3107441}.
 \begin{proposition}
   \label{proposition:extended matrix}
   Let $M$ be an incomplete binary matrix.
-  Let $M_{e}$ be the (incomplete) matrix obtained from $M$ has follows:
-  for each entry $M[i,j]$ we have two entries $M_{e}[i,j^{+}]$ and
-$M_{e}[i,j^{-}]$ such that (1) if $M[i,j] = 1$ then $M_{e}[i,j^{+}] = 1$ and
+  Let $M_{e}$ be the (incomplete) matrix obtained from $M$ as follows:
+  for each entry $M[i,j]$ we have $k+1$ entries $M_{e}[i,j^{+}]$ and
+$M_{e}[i,j_{l}^{-}]$ (for $1\le l\le k$) such that (1) if $M[i,j] = 1$ then $M_{e}[i,j^{+}] = 1$ and
 $M_{e}[i,j_{l}^{-}] = 0$ for $1\le l\le k$, (2) if $M[i,j] = 0$ then the entries
 $M_{e}[i,j^{+}]$, $ M_{e}[i,j_{l}^{-}]$ are all missing.
-Then $M$ has a completion $\bar{M}$ that has a Dollo$(k)$ phylogeny if and only if $M_{e}$
-has a completion $\bar{M_{e}}$ such that if $M(i,j)= 0$ then $M_{e}[i,j^{+}] = \sum_{l\le
-  k} M_{e}[i,j_{l}^{-}]$.
+Then $M$ has a completion $M^{*}$ that has a Dollo$(k)$ phylogeny if and only if $M_{e}$
+has a completion $M^{*}_{e}$ such that if $M(i,j)= 0$ then $M^{*}_{e}[i,j^{+}] = \sum_{l\le
+  k} M^{*}_{e}[i,j_{l}^{-}]$.
 \end{proposition}
 
 
 Our main contribution is combining the ILP formulation
-of~\cite{Bonizzoni:2017:BPP:3107411.3107441} with definition of tumor perfect phylogeny
-reconstruction from single-cell data, to obtain an ILP approach for tumor phylogeny
-reconstruction from single-cell data that incorporates mutation losses in the model.
+of~\cite{Bonizzoni:2017:BPP:3107411.3107441} with the definition of tumor perfect phylogeny
+reconstruction from single cell data, to obtain an ILP approach for tumor phylogeny
+reconstruction from single cell data that incorporates mutation losses in the model.
 
 % This relation motivates the following definition~\cite{gusfield_persistent_2015}:
 
@@ -513,7 +519,7 @@ In the tree, boldfaced character corresponds to changes between each node and it
 \section{The ILP formulation}
 \label{sec:ilp}
 In this section we present our ILP formulation for the tumor phylogeny reconstruction from
-single-cell data.
+single cell data.
 
 We recall that the input of the problem is an incomplete matrix $I$ represented as a set
 of binary variables $I(c,m)$ such that $I(c,m)=1$ if cell 
@@ -524,10 +530,9 @@ Notice that the input data is incomplete, hence we can have pairs $(c,m)$ such t
 the variable $I(c,m)$ does not exist.
 
 
-A similar set of variables is used for the extended matrix $E$.
-In fact, we have the variables $P(c,m^{+})$ and $P(c,m_{i}^{-})$ that encode the extended
-matrix $E$ that we want to find.
-Differently from the variable $I(\cdot,\cdot)$, for each pair $(c,m)$, the
+The variables $P(c,m^{+})$ and $P(c,m_{i}^{-})$ encode the extended matrix that we want to compute and
+that will satisfy Proposition~\ref{proposition:extended matrix}.
+Differently from the variable $I(\cdot,\cdot)$, for each pair $(c,m)$, all
 variables $P(c,m^{+})$ and $P(c,m_{i}^{-})$ exist.
 
 We introduce some auxiliary variables that help in making the ILP formulation easier to read.
@@ -535,12 +540,15 @@ The binary variables $F(c,m)$ indicates if, in the predicted matrix, the cell $c
 mutation $m$.
 By Proposition~\ref{proposition:extended matrix}, $F(c,m)=1$ if and only if $P(c,m^{+})=1$
 and all $P(c,m_{i}^{-})$ are equal to zero.
-The real variables $w(c,m)$ represent the probability of $P(c,m)$ given $I(c,m)$.
+Moreover, the real variables $w(c,m)$ represent the probability of $P(c,m)$ given $I(c,m)$
+--- the formula of the actual values depends on the possible cases, that is if we have a
+true positive, a true negative, a false positive, and a false negative.
+
 
 To establish if two columns are in conflict, we introduce the final binary variables 
 $B(p,q,a,b)$, which  are defined for each pair of columns $(p,q)$ and for each
 possible  pair  of  values  $(a,b)\in \{(0,1), (1,0), (1,1)\}$.
-More precisely, $B(p,q,a,b)$ indicates if for the (ordered) pair of columns $(p,q)$
+More precisely, $B(p,q,a,b)$ indicates if for the pair  $(p,q)$ of columns
 there  exists a cell $c$ where $P(c,p)=a$ and $P(c,q)=b$.
 Notice that two columns $p$ and $q$ are conflicting iff $B(p,q,0,1) + B(p,q,1,0) +
 B(p,q,1,1) = 3$.
