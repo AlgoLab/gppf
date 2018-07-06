@@ -209,41 +209,49 @@ model.optimize()
 #==================================================================#
 #======================= POST OPTIMIZATION ========================#
 #==================================================================#
-# if args.exp:
-#       print_exp_solution(num_clones, num_samples, num_mutations,
-#               start_optimize, args, model, u, x, input_matrix, matrix_name)
-# else:
-#       print_solution(num_clones, num_samples, num_mutations,
-#               start_optimize, args, model, u, x, y, error, input_matrix, matrix_name, mutation_names)
+
 matrix = []
+# print(P)
 with open('{0}.ilp.out'.format(outfile), 'w+') as file_out:
-    c = 0
-    while c < num_clones:
-        k = 0
-        row = []
-        row_int = []
-        while k < (args.k+1)*num_mutations:
-            row.append(str(int(P[c][k].X)))
-            row_int.append(int(P[c][k].X))
-            k += 1
-        file_out.write(' '.join(row))
+    for row_index, row in enumerate(input_matrix):
+        row_out = []
+        for col_index, cell in enumerate(row):
+            names = expand_name(str(col_index), 1, max_losses)
+            for name in names:
+                row_out.append(int(float(P[row_index][name].X)))
+        matrix.append(row_out)
+        file_out.write(' '.join([str(x) for x in row_out]))
         file_out.write('\n')
-        matrix.append(row_int)
-        c += 1
+
+    # c = 0
+    # while c < num_clones:
+    #     k = 0
+    #     row = []
+    #     row_int = []
+    #     while k < (args.k+1)*num_mutations:
+    #         row.append(str(int(P[c][k].X)))
+    #         row_int.append(int(P[c][k].X))
+    #         k += 1
+    #     file_out.write(' '.join(row))
+    #     file_out.write('\n')
+    #     matrix.append(row_int)
+    #     c += 1
 
 if model.status == GRB.Status.OPTIMAL or model.status == GRB.Status.TIME_LIMIT:
     value = float(model.objVal) + n_zeros * l_beta + n_ones * lbeta
     with open('{0}.ilp.log'.format(outfile), 'w+') as file_out:
         file_out.write('Optimal likelihood: %f\n' % value)
 	
-    names = []
-    matrix = np.array(matrix)
-    print(matrix)
-    for m in range(num_mutations):
-        names.append(str(m+1))
-	for k in range(args.k):
-	    names.append('%d_%d-' % (m+1, k+1))
-    print(names)
+    # names = []
+
+
+    # matrix = np.array(matrix)
+    # print(matrix)
+    # for m in range(num_mutations):
+    #     names.append(str(m+1))
+	# for k in range(args.k):
+	#     names.append('%d_%d-' % (m+1, k+1))
+    # print(names)
 	
-    from tree import *
-    write_tree_comp(matrix, names, '{0}.ilp.gv'.format(outfile))
+    # from tree import *
+    # write_tree_comp(matrix, names, '{0}.ilp.gv'.format(outfile))
