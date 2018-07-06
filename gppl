@@ -10,7 +10,7 @@ import argparse
 import itertools
 
 # user-created libraries
-sys.path.append(os.path.abspath(os.getcwd() + '/utils'))
+#sys.path.append(os.path.abspath(os.getcwd() + '/utils'))
 from matrix_utils import *
 from outputs import *
 
@@ -124,6 +124,7 @@ for row_index, row in enumerate(input_matrix):
             # I
             I[row_index][col_index] = model.addVar(vtype=GRB.BINARY, obj=0,
                                                    name='I{0}-{1}'.format(row_index, col_index))
+            model.update()
             model.addConstr(I[row_index][col_index] == cell,
                             "constr_I{0}-{1}".format(row_index, col_index))
             # F and fminus. fminus is equal to 1-F
@@ -139,6 +140,7 @@ for row_index, row in enumerate(input_matrix):
                                                             name='f{0}-{1}'.format(row_index, col_index))
                 FP[row_index][col_index] = model.addVar(vtype=GRB.BINARY, obj=0,
                                                         name='FP{0}-{1}'.format(row_index, col_index))
+                model.update()
                 model.addConstr(FP[row_index][col_index] == 1 - P[row_index][names[0]],
                                 name='constr_FP{0}-{1}'.format(row_index, col_index))
             model.update()
@@ -169,6 +171,7 @@ for p, q in itertools.combinations(columns, 2):
                                  name='B[{0},{1},1,0]'.format(p, q))
     B[p][q]['11'] = model.addVar(vtype=GRB.BINARY, obj=0,
                                  name='B[{0},{1},1,1]'.format(p, q))
+    model.update()
     for row_index, row in enumerate(input_matrix):
         model.addConstr(B[p][q]['01'] >= P[row_index][q] - P[row_index][p],
                         "constr_B01-{0}-{1}-{2}".format(p, q, row_index))
