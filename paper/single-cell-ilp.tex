@@ -206,7 +206,7 @@ represents  the presence/absence of a specific mutation in a cell.
 \label{fig:dollo}
 \end{figure}
 
-The input of the problem is a binary incomplete matrix $I$, where the entry $I[c,m]=0$ indicates
+The input of the problem is a incomplete binary matrix $I$, where the entry $I[c,m]=0$ indicates
 that the cell $c$ does not have the mutation $m$, while $I[c,m]=1$ indicates that the
 cell $c$ has the mutation $m$.
 Finally, we denote with $I[c,m]=?$ where there is not enough information on the
@@ -217,43 +217,43 @@ insufficient coverage in the sequencing, hence it is unavoidable.
 
 However, uncertainty is not the only issue in the sequencing process:
 the input matrix $I$ also contains false positives and false negatives. 
-We assume that these error occur independently and uniformly across 
+We assume that these errors occur independently and uniformly across 
 all the (known) entries of $I$. 
-Namely, $P$ denotes the predicted matrix, \ie the binary matrix without
+Namely, $E$ denotes the predicted matrix, \ie the binary matrix without
 missing values computed by the algorithm.
 In this case,
 $\alpha$ denotes the false negative rate and $\beta$ denotes the false positive rate.
 In other words, for each pair $(c,m)$, 
 \begin{itemize}
-    \item $Pr(I[c,m] = 0|P[c,m] = 0) = 1- \beta$
-    \item $Pr(I[c,m] = 1|P[c,m] = 0) = \beta$
-    \item $Pr(I[c,m] = 1|P[c,m] = 1) = 1- \alpha$
-    \item $Pr(I[c,m] = 0|P[c,m] = 1) = \alpha$
+    \item $Pr(I[c,m] = 0|E[c,m] = 0) = 1- \beta$
+    \item $Pr(I[c,m] = 1|E[c,m] = 0) = \beta$
+    \item $Pr(I[c,m] = 1|E[c,m] = 1) = 1- \alpha$
+    \item $Pr(I[c,m] = 0|E[c,m] = 1) = \alpha$
 \end{itemize}
 
-Our goal is to find a matrix $P$ that (1) corresponds to a phylogeny on the set of cells,
+Our goal is to find a matrix $E$ that (1) corresponds to a phylogeny on the set of cells,
 and (2) maximizes the the likelihood 
 $$
-Pr(I|P) = \prod_{m} \prod_{c} Pr(I[c,m] | P[c,m])
+Pr(I|E) = \prod_{m} \prod_{c} Pr(I[c,m] | E[c,m])
 $$
 of the observed matrix $I$~\cite{Jahn2016}.
-In other words, we want to find the phylogeny, as expressed by the matrix $P$, that
+In other words, we want to find the phylogeny, as expressed by the matrix $E$, that
 maximizes the likelihood of the observed matrix $I$~\cite{Jahn2016}.
 We point out that the values of the unknown entries of the input matrix 
-do not affect in the objective function.
+do not factor into the objective function.
 % Thus, $Pr(I[c,m] = ?|P[c,m] = 1) = Pr(I[c,m] = ?|P[c,m] = 0) = 1$.
 
 
 A phylogeny is a rooted labeled tree $T$, where the label set corresponds to the set of
-mutations gains and losses.
+mutation gains and losses.
 The state of a leaf $x$ is defined as the set of mutations that are acquired and not lost in the path from $x$ the root.
 Moreover, the state of $x$ is naturally
 represented by a binary vector, denoted by $\lambda(x)$, such that $\lambda(x)[m]=1$ if and
 only if the node $x$ contains the mutation $m$, and $\lambda(x)[m]=0$ otherwise.
 
-We say that the tree $T$ encodes a matrix $P$ 
-if there exists a mapping $\sigma$ of the rows  of $P$
-to the leaves of $T$ such that for each row $r$ of $P$, $r=\lambda(\sigma(r))$,
+We say that the tree $T$ encodes a matrix $E$ 
+if there exists a mapping $\sigma$ of the rows  of $E$
+to the leaves of $T$ such that for each row $r$ of $E$, $r=\lambda(\sigma(r))$,
 where $\sigma(r)$ denotes the leaf of $T$ associated with $r$ through $\sigma$.
 In other words, in the tree $T$ we assume that the cell $c$ has been extracted from the
 subpopulation $\sigma(c)$.
@@ -278,7 +278,7 @@ It is important to notice that the ancestral order of mutations $c,a$ and $b$ is
 \label{fig:dollo_non_unique}
 \end{figure}
 
-We can express the likelihood of the matrix $E$ as: $Pr(I|P) = \prod_{c} \prod_{m} P(I[c,m] | P[c,m])$.
+We can express the likelihood of the matrix $E$ as: $Pr(I|E) = \prod_{c} \prod_{m} P(I[c,m] | E[c,m])$.
 Since the involved probabilities are in [0,1] it is convenient to move to a (linear) log-likelihood maximization objective function of the form:
 \begin{equation}
 \label{eq:log-likelihood}
@@ -304,8 +304,8 @@ In the tree generation process for the Dollo($k$) model ($k>0$) we are required 
 the phylogenic tree $T$ representing the cancer progression by adding nodes which
 represent the loss of a mutation, \ie a node labelled $m^-_l$, representing the $l$-th
 loss of mutation $m$.  
-As a consequence, the function $\lambda(\cdot)$ needs to be slightly modified to take
-account of the losses.
+As a consequence, the function $\lambda(\cdot)$ needs to be slightly modified to take into
+account the losses.
 The state of the leaf $x$ is  the set of  mutations $m$ that, in the path from the root to
 $x$, have been acquired --- the path has a vertex labeled $m^{+}$ --- but never lost ---
 the path has no vertex labeled $m_{i}^{-}$.
@@ -318,7 +318,7 @@ the case of Perfect phylogeny.
 
 
 
-Testing if an incomplete matrix $P$ has a phylogeny under the Dollo($k$) model has been
+Testing if an incomplete matrix $E$ has a phylogeny under the Dollo($k$) model has been
 attacked via ILP for $k=0$~\cite{Gusfield2007}, $k=1$~\cite{gusfield_persistent_2015}, and
 for general $k$~\cite{Bonizzoni:2017:BPP:3107411.3107441}.
 We will exploit the latter formulation to describe an ILP approach for tumor phylogeny
