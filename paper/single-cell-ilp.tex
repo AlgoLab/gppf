@@ -248,9 +248,12 @@ words, for each pair $(c,m)$,
 
 Our goal is to find a matrix $P$ that (1) corresponds to a phylogeny
 on the set of cells, and (2) maximizes the the likelihood
-$$
-Pr(I|P) = \prod_{m} \prod_{c} Pr(I[c,m] | P[c,m])
-$$
+
+\begin{equation}
+  \label{eq:likelihood}
+  Pr(I|P) = \prod_{c} \prod_{m} Pr(I[c,m] | P[c,m])
+\end{equation}
+
 of the observed matrix $I$~\cite{Jahn2016}.  In other words, we want
 to find the phylogeny, as expressed by the matrix $P$, that maximizes
 the likelihood of the observed matrix $I$~\cite{Jahn2016}.  We point
@@ -295,10 +298,11 @@ a phylogeny a matrix that it encodes.
   \label{fig:dollo_non_unique}
 \end{figure}
 
-We can express the likelihood of the matrix $P$ as:
-$Pr(I|P) = \prod_{c} \prod_{m} P(I[c,m] | P[c,m])$.  Since the
-involved probabilities are in [0,1] it is convenient to move to a
-(linear) log-likelihood maximization objective function of the form:
+We can express the likelihood of the matrix $P$ as in
+Equation~\ref{eq:likelihood} --- since the involved probabilities are
+in [0,1] it is convenient to move to a (linear) log-likelihood
+maximization objective function of the form:
+
 \begin{equation}
   \label{eq:log-likelihood}
   \mbox{max } \sum_c \sum_m \log Pr\left( I[c,m] | P[c,m]\right)
@@ -306,14 +310,15 @@ involved probabilities are in [0,1] it is convenient to move to a
 
 \subsection{The evolution model}
 \label{sec:intro_dollok}
+
 The Dollo parsimony rule can be interpreted as the impossibility of
 having an identical mutation in the evolutionary trajectory.  This
 rule can be translated in the phylogeny tree model as the unique
 introduction of any single mutation but any number of deletions of
 this mutation.
 
-From an algorithmic point of view, the phylogeny reconstruction model
-with a Dollo evolutionary model is an NP-complete
+From an algorithmic point of view, phylogeny reconstruction with a
+Dollo evolutionary model is an NP-complete
 problem~\cite{BKW95,DAY198633}.  A hierarchical chain of restricted
 versions of the model can be obtained by bounding the number of
 deletions for each character.  We denote as Dollo($k$) the
@@ -360,7 +365,7 @@ phylogenies states that a \emph{complete} binary matrix $M$ has a
 directed perfect phylogeny if and only if it has no \emph{conflicting}
 pair of columns --- two columns are in conflict if they contain all
 three configurations $(0,1)$, $(1,0), (1,1)$ --- inducing the
-so-called forbidden matrix.
+so-called forbidden matrix (\emph{c.f.} Figure~\ref{fig:dollo}).
 
 The ILP formulation on \emph{incomplete} matrices~\cite{Gusfield2007}
 essentially consists of introducing a binary variable for each missing
@@ -369,20 +374,21 @@ minimizing the conflicting pairs.
 
 To adapt this approach to persistent
 phylogenies~\cite{gusfield_persistent_2015}, we need a
-property~\cite{Bonizzoni:2017:BPP:3107411.3107441}.
+property: 
 
 \begin{proposition}
   \label{proposition:extended matrix}
-  Let $M$ be an incomplete binary matrix.  Let $M_{e}$ be the
-  (incomplete) matrix obtained from $M$ as follows: for each entry
-  $M[i,j]$ we have $k+1$ entries $M_{e}[i,j^{+}]$ and
-  $M_{e}[i,j_{l}^{-}]$ (for $1\le l\le k$) such that (1) if
-  $M[i,j] = 1$ then $M_{e}[i,j^{+}] = 1$ and $M_{e}[i,j_{l}^{-}] = 0$
-  for $1\le l\le k$, (2) if $M[i,j] = 0$ then the entries
-  $M_{e}[i,j^{+}]$, $ M_{e}[i,j_{l}^{-}]$ are all missing.  Then $M$
-  has a completion $M^{*}$ that has a Dollo$(k)$ phylogeny if and only
-  if $M_{e}$ has a completion $M^{*}_{e}$ such that if $M(i,j)= 0$
-  then $M^{*}_{e}[i,j^{+}] = \sum_{l\le k} M^{*}_{e}[i,j_{l}^{-}]$.
+  \cite{Bonizzoni:2017:BPP:3107411.3107441} Let $M$ be an incomplete
+  binary matrix.  Let $M_{e}$ be the (incomplete) matrix obtained from
+  $M$ as follows: for each entry $M[i,j]$ we have $k+1$ entries
+  $M_{e}[i,j^{+}]$ and $M_{e}[i,j_{l}^{-}]$ (for $1\le l\le k$) such
+  that (1) if $M[i,j] = 1$ then $M_{e}[i,j^{+}] = 1$ and
+  $M_{e}[i,j_{l}^{-}] = 0$ for $1\le l\le k$, (2) if $M[i,j] = 0$ then
+  the entries $M_{e}[i,j^{+}]$, $ M_{e}[i,j_{l}^{-}]$ are all missing.
+  Then $M$ has a completion $M^{*}$ that has a Dollo$(k)$ phylogeny if
+  and only if $M_{e}$ has a completion $M^{*}_{e}$ such that if
+  $M(i,j)= 0$ then
+  $M^{*}_{e}[i,j^{+}] = \sum_{l\le k} M^{*}_{e}[i,j_{l}^{-}]$.
 \end{proposition}
 
 Our main contribution is combining the ILP formulation
