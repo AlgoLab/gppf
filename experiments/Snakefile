@@ -1,0 +1,208 @@
+'''
+
+   see README in the same directory as this Snakefile for instructions
+   on how to rerun this workflow
+
+'''
+
+# softwares
+_cea_ = 'softwares/cancer_ea/main.py',
+_sasc_ = 'softwares/sasc/sasc'
+
+# limits on memory useage and runtime
+memlimit = 64 * 1024 * 1024 # 64GB limit (in KB)
+timelimit = '24h' # 24 hour time limit
+time = '/usr/bin/time'
+timeout = '/usr/bin/timeout'
+
+#
+# parameters
+#----------------------------------------------------------------------
+files = ['sim1_scs.in']
+
+kappas = [1] #[0]
+alphas = [0.05] #[0.1, 0.15]
+betas = [0.001] #[0.0001, 0.00001]
+
+popsizes = [100, 150, 200]
+maxgens = [1000, 2000]
+elitesizes = [0, 10, 30]
+
+crossprobs = [0.8, 0.85, 0.9, 0.95, 1]
+mutprobs = [0.5, 0.55, 0.6, 0.65, 0.7]
+
+fitnesses = ['direct', 'likelihood']
+
+# -- for sasc
+ks = [2]
+ds = [5]
+rs = [1]
+#----------------------------------------------------------------------
+#
+
+# patterns
+def list_regex(a) :
+	return '|'.join([x for x in a])
+
+kab_pattern = 'k{kappa,[0-9]+}-a{alpha,[0-9]+(|.[0-9]+)}-b{beta,[0-9]+(|.[0-9]+)}'
+ea_sizes_pattern = 'pop{popsize,[0-9]+}-maxgen{maxgen,[0-9]+}-elite{elitesize,[0-9]+}'
+ea_probs_pattern = 'cross{crossprob,[0-9]+(|.[0-9]+)}-mut{mutprob,[0-9]+(.[0-9]+)}'
+ea_pattern = 'results_cgp/cgp-' + kab_pattern + '-' + ea_sizes_pattern + '-' + ea_probs_pattern + '-tour{toursize,[0-9]+(|.[0-9]+)}-rand{seed,(|-)[0-9]+}-fitness_{fitness,(' + list_regex(fitnesses) + ')}'
+
+
+#
+# group parameters with list-defining functions
+#----------------------------------------------------------------------
+
+# kappa, alpha, beta
+def kabs(kappas_, alphas_, betas_) :
+	return ['k{}-a{}-b{}'.format(kappa_, alpha_, beta_)
+		for kappa_ in kappas_
+		for alpha_ in alphas_
+		for beta_ in betas_]
+
+# ea parameters: population size, number of generations, elite size
+def ea_sizes(pops_, gens_, elites_) :
+	return ['pop{}-maxgen{}-elite{}'.format(pop_, gen_, elite_)
+		for pop_ in pops_
+		for gen_ in gens_
+		for elite_ in elites_]
+
+# ea probabilities: crossover, mutation
+def ea_probs(crosses_, muts_) :
+	return ['cross{}-mut{}'.format(cross_, mut_)
+		for cross_ in crosses_
+		for mut_ in muts_]
+
+#
+# master rule
+#----------------------------------------------------------------------
+rule master :
+	input :
+		expand('{file}.results_cgp/cgp-{kab}-{sizes}-{probs}-tour{toursize}-rand{seed}-fitness_{fitness}.out',
+			file = files,
+			kab = kabs(kappas, alphas, betas),
+			sizes = ea_sizes(popsizes, maxgens, elitesizes),
+			probs = ea_probs(crossprobs, mutprobs),
+			toursize = 3.5,
+			seed = -1,
+			fitness = fitnesses)
+
+#
+# install the softwares
+#----------------------------------------------------------------------
+
+# cancer ea
+rule download_cea :
+        output : _cea_
+	message : 'downloading cancer evolutionary algorithms ...'
+	shell : '''
+
+   mkdir -p softwares
+   cd softwares
+   git clone https://github.com/AlgoLab/cancer_ea.git '''
+
+
+# sasc
+sasc_files = 'mt19937ar sasc sastep tree utils vector'.split()
+rule download_sasc :
+	output : expand('softwares/sasc/{file}.c', file = sasc_files)
+	message : 'downloading sasc ...'
+	shell : '''
+
+   mkdir -p softwares
+   cd softwares
+   git clone https://github.com/sciccolella/sasc.git '''
+	
+rule install_sasc :
+	input : expand('softwares/sasc/{file}.c', file = sasc_files)
+	params :
+		std = 'gnu99',
+		debug = '-g'
+	output : _sasc_
+	message : 'installing sasc ...'
+	shell : 'gcc -o {output} {input} -std={params.std} {params.debug} -lm'
+
+
+#
+# run cancer ea
+#----------------------------------------------------------------------
+rule run_cea :
+	input :
+		prgm = _cea_,
+                matrix = '{file}.in'
+
+	params :
+		fitnessfunction = lambda wildcards :
+			'--evaluateDirect' if wildcards.fitness == 'direct' else '--evaluateLikelihood'
+
+	output : '{file}.in.' + ea_pattern + '.out'
+	log :
+		log = '{file}.in.' + ea_pattern + '.log',
+		time = '{file}.in.' + ea_pattern + '.time'
+
+	shell : '''
+
+   ulimit -Sv {memlimit}
+   {time} -v -o {log.time} {timeout} {timelimit} \
+      python {input.prgm} inputfile={input.matrix} \
+         dollok={wildcards.kappa} alpha={wildcards.alpha} beta={wildcards.beta} \
+         populationsize={wildcards.popsize} \
+         maxnumbergenerations={wildcards.maxgen} \
+         elitesize={wildcards.elitesize} \
+         crossoverprobability={wildcards.crossprob} \
+         mutationprobability={wildcards.mutprob} \
+         finegrainedtournamentsize={wildcards.toursize} \
+         randomseed={wildcards.seed} \
+         {params.fitnessfunction} \
+            > {output} 2> {log.log} || true
+   touch {output} '''
+
+#
+# run sasc
+#----------------------------------------------------------------------
+rule run_sasc :
+	input :
+		program = _sasc_,
+		matrix = '{file}.txt'
+
+	output : '{file}.sasc-a{alpha}-b{beta}-k{k}-d{del}-r{reps}.out'
+
+	log : '{file}.sasc-a{alpha}-b{beta}-k{k}-d{del}-r{reps}.log'
+
+	message : '''
+
+   running sasc ({input.program}) on
+   {input.matrix} with
+   alpha = {wildcards.alpha}, beta = {wildcards.beta}, k = {wildcards.k},
+   d = {wildcards.del}, r = {wildcards.reps} '''
+
+       	run :
+		with open(input.matrix) as M :
+			m = len(M.readline().split())
+			n = sum(1 for line in M) + 1
+		shell('''
+
+   {input.program} -i {input.matrix} \
+      -n {n} -m {m} \
+      -a {wildcards.alpha} -b {wildcards.beta} -k {wildcards.k} \
+      -d {wildcards.del} -r {wildcards.reps} \
+         > {output} 2> {log} ''')
+
+#
+# convert a matrix file (ilp) to input for cancer ea
+#----------------------------------------------------------------------
+rule matrix_to_infile :
+	output : '{file}.in'
+	input : '{file}.txt'
+	log : '{file}.in.log'
+	message : 'converting {input} to {output} ...'
+
+	run :
+		with open(input[0]) as M :
+			m = len(M.readline().split())
+		header = ' '.join(str(i) for i in range(1,m+1))
+		shell('''
+
+   echo {header} > {output}
+   sed 's/2/?/g' {input} >> {output} ''')
