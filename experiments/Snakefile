@@ -1,7 +1,6 @@
 '''
 
-   see README in the same directory as this Snakefile for instructions
-   on how to rerun this workflow
+   experiments for gpps, the new ilp for single cell
 
 '''
 
@@ -19,24 +18,26 @@ timeout = '/usr/bin/timeout'
 #
 # parameters
 #----------------------------------------------------------------------
-files = ['sim1_scs.in']
 
-kappas = [1] #[0]
-alphas = [0.05] #[0.1, 0.15]
-betas = [0.001] #[0.0001, 0.00001]
+# experiments
 test_name = '../single_cell_data/simulations/m_20-n_30-k_0-fn_0.2-fp_0.0001/sim10_scs'
+exp1_names = ['data/exp1-sim{}_scs'.format(i) for i in range(1,11)]
+exp2_names = ['data/exp2-sim{}_scs'.format(i) for i in range(1,11)]
 
-popsizes = [100, 150, 200]
-maxgens = [1000, 2000]
-elitesizes = [0, 10, 30]
+# ilp
+cutofftimes = [86400, 518400] # 24 * 3600 (24 hours), and 6x that (6 days)
 
-crossprobs = [0.8, 0.85, 0.9, 0.95, 1]
-mutprobs = [0.5, 0.55, 0.6, 0.65, 0.7]
+# ea
+popsizes = [150]
+maxgens = [2000]
+elitesizes = [10]
 
-fitnesses = ['direct', 'likelihood']
+crossprobs = [0.9]
+mutprobs = [0.6]
 
-# -- for sasc
-ks = [2]
+fitnesses = ['likelihood']
+
+# sasc
 ds = [5]
 rs = [1]
 
@@ -85,13 +86,30 @@ def ea_probs(crosses_, muts_) :
 #----------------------------------------------------------------------
 rule master :
 	input :
-		expand('{file}.results_cgp/cgp-{kab}-{sizes}-{probs}-tour{toursize}-rand{seed}-fitness_{fitness}.out',
-			file = files,
-			kab = kabs(kappas, alphas, betas),
+		# ilp
+		expand('{filename}.txt.results_gpps-{kab}-cutoff{cutofftime}/.out',
+			filename = exp1_names,
+			kab = kabs([1], [0.15], [0.001]),
+			cutofftime = cutofftimes),
+		expand('{filename}.txt.results_gpps-{kab}-cutoff{cutofftime}/.out',
+			filename = exp2_names,
+			kab = kabs([2], [0.1], [0.0001]),
+			cutofftime = cutofftimes),
+
+		# ea
+		expand('{filename}.in.results_cgp/cgp-{kab}-{sizes}-{probs}-tour{toursize}-rand{seed}-fitness_{fitness}.out',
+			filename = exp1_names,
+			kab = kabs([1], [0.15], [0.001]),
 			sizes = ea_sizes(popsizes, maxgens, elitesizes),
 			probs = ea_probs(crossprobs, mutprobs),
-			toursize = 3.5,
-			seed = -1,
+			toursize = 3.5, seed = -1,
+			fitness = fitnesses),
+		expand('{filename}.in.results_cgp/cgp-{kab}-{sizes}-{probs}-tour{toursize}-rand{seed}-fitness_{fitness}.out',
+			filename = exp2_names,
+			kab = kabs([2], [0.1], [0.0001]),
+			sizes = ea_sizes(popsizes, maxgens, elitesizes),
+			probs = ea_probs(crossprobs, mutprobs),
+			toursize = 3.5, seed = -1,
 			fitness = fitnesses)
 
 # santiy check
