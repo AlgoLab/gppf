@@ -259,19 +259,17 @@ factor into the objective function.
 % Thus, $Pr(I[c,m] = ?|P[c,m] = 1) = Pr(I[c,m] = ?|P[c,m] = 0) = 1$.
 
 A phylogeny is a rooted labeled tree $T$, where the label set
-corresponds to the set of mutation gains and losses.  The state of a
-leaf $x$ is defined as the set of mutations that are acquired and not
-lost in the path from $x$ the root.  Moreover, the state of $x$ is
-naturally represented by a binary vector, denoted by $\lambda(x)$,
-such that $\lambda(x)[m]=1$ if and only if the node $x$ contains the
-mutation $m$, and $\lambda(x)[m]=0$ otherwise.
-
-We say that the tree $T$ encodes a matrix $P$ if there exists a
-mapping $\sigma$ of the rows of $P$ to the leaves of $T$ such that for
-each row $r$ of $P$, $r=\lambda(\sigma(r))$, where $\sigma(r)$ denotes
-the leaf of $T$ associated with $r$ through $\sigma$.  In other words,
-in the tree $T$ we assume that the cell $c$ has been extracted from
-the subpopulation $\sigma(c)$.
+corresponds to the set of mutation gains and losses.  The state $S(x)$
+of a leaf $x$ in $T$ is defined as the set of mutations that are
+acquired and not lost in the path from the root of $T$ to $x$.  We say
+that the tree $T$ encodes a matrix $P$ if there exists a mapping
+$\sigma$ of the rows of $P$ to the leaves of $T$ such that for each
+row $r$ of $P$, it follows that $C(r)=S(\sigma(r))$ where $C(r)$ is
+the set of columns which are 1 in $r$, and $\sigma(r)$ denotes the
+leaf of $T$ associated with $r$ through $\sigma$.  In other words, in
+the tree $T$ we assume that the cell $c$ has been extracted from the
+subpopulation $\sigma(c)$.  See Figure~\ref{fig:dollo} for example of
+a phylogeny a matrix that it encodes.
 
 \begin{figure}[!tb]
   \begin{minipage}{0.72\linewidth}
@@ -323,17 +321,16 @@ evolutionary model in which each mutation can be acquired exactly once
 and can be lost at most $k$ times.  In this way Dollo($0$) and
 Dollo($1$) correspond to the perfect and persistent phylogeny models,
 respectively.  In the tree generation process for the Dollo($k$) model
-($k>0$) we are required to augment the phylogenic tree $T$
-representing the cancer progression by adding nodes which represent
-the loss of a mutation, \ie, a node labelled $m^-_l$, representing the
-$l$-th loss of mutation $m$.  As a consequence, the function
-$\lambda(\cdot)$ needs to be slightly modified to take into account
-the losses.  The state of the leaf $x$ is the set of mutations $m$
-that, in the path from the root to $x$, have been acquired --- the
+($k>0$) we are required to augment a Perfect phylogeny representing
+the cancer progression by adding nodes which represent the loss of a
+mutation, \ie, a node labelled $m^-_l$, representing the $l$-th loss
+of mutation $m$.  The state of the leaf $x$ is the set of mutations
+$m$ that, in the path from the root to $x$, have been acquired --- the
 path has a vertex labeled $m^{+}$ --- but never lost --- the path has
 no vertex labeled $m_{i}^{-}$.  We stress that, when deletions are
 introduced, the set of feasible phylogenies which represent a given
-solution is no longer unique as in the case of Perfect phylogeny.
+solution is no longer unique as in the case of Perfect phylogeny ---
+See Figure~\ref{fig:dollo_non_unique} for an example.
 % We can see that switching the labels of nodes $b^-$ and $d^-$ in Figure~\ref{fig:dollo} produces a different tree which is still a solution of the proposed input matrix. 
 % Moreover we see that ancestral relationship between characters is different in both representations.
 % When the number of cells, mutations and possible deletions increases, and with the noise caused by false calls and missing entries, this problem is greatly amplified, causing the number of different cancer progression phylogenies which equally explain the same input, to explode. A more complex example can be seen in Figure~\ref{fig:dollo_non_unique} where a different order of mutations and a different set of deletions can equally explain a given input.
