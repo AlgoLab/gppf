@@ -326,7 +326,7 @@ evolutionary model in which each mutation can be acquired exactly once
 and can be lost at most $k$ times.  In this way Dollo($0$) and
 Dollo($1$) correspond to the perfect and persistent phylogeny models,
 respectively.  In the tree generation process for the Dollo($k$) model
-($k>0$) we are required to augment a Perfect phylogeny representing
+($k>0$) we are required to augment a perfect phylogeny representing
 the cancer progression by adding nodes which represent the loss of a
 mutation, \ie, a node labelled $m^-_l$, representing the $l$-th loss
 of mutation $m$.  The state of the leaf $x$ is the set of mutations
@@ -334,7 +334,7 @@ $m$ that, in the path from the root to $x$, have been acquired --- the
 path has a vertex labeled $m^{+}$ --- but never lost --- the path has
 no vertex labeled $m_{i}^{-}$.  We stress that, when deletions are
 introduced, the set of feasible phylogenies which represent a given
-solution is no longer unique as in the case of Perfect phylogeny ---
+solution is no longer unique as in the case of perfect phylogeny ---
 See Figure~\ref{fig:dollo_non_unique} for an example.
 % We can see that switching the labels of nodes $b^-$ and $d^-$ in Figure~\ref{fig:dollo} produces a different tree which is still a solution of the proposed input matrix. 
 % Moreover we see that ancestral relationship between characters is different in both representations.
@@ -598,6 +598,7 @@ cell data that incorporates mutation losses in the model.
 
 \section{The ILP formulation}
 \label{sec:ilp}
+
 In this section we present our ILP formulation for the tumor phylogeny
 reconstruction from single cell data.
 
@@ -712,7 +713,7 @@ Our approach has been implemented with a Python program called
 \texttt{gpps}.  The code, data and scripts used in our experimental
 analysis is available at \url{https://github.com/AlgoLab/gppf}.  The
 algorithm receives as input a frequency matrix $F$, the evolution
-model (Persistent, Dollo($k$), Camin-Sokal($k$)) to be considered and
+model (persistent, Dollo($k$), Camin-Sokal($k$)) to be considered and
 the maximum number of clones in the clonal matrix (expressed as the
 percentage of the total number of mutations).  The program generates
 the ILP formulation which is fed to an ILP solver in order to get the
