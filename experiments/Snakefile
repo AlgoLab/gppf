@@ -6,6 +6,7 @@
 '''
 
 # softwares
+_gpps_ = '../gpps'
 _cea_ = 'softwares/cancer_ea/main.py',
 _sasc_ = 'softwares/sasc/sasc'
 
@@ -37,18 +38,22 @@ fitnesses = ['direct', 'likelihood']
 ks = [2]
 ds = [5]
 rs = [1]
-#----------------------------------------------------------------------
-#
 
+#
 # patterns
+#----------------------------------------------------------------------
 def list_regex(a) :
 	return '|'.join([x for x in a])
 
 kab_pattern = 'k{kappa,[0-9]+}-a{alpha,[0-9]+(|.[0-9]+)}-b{beta,[0-9]+(|.[0-9]+)}'
+
+# ilp
+gpps_pattern = 'results_gpps-' + kab_pattern + '-cutoff{cutofftime,[0-9]+}'
+
+# ea
 ea_sizes_pattern = 'pop{popsize,[0-9]+}-maxgen{maxgen,[0-9]+}-elite{elitesize,[0-9]+}'
 ea_probs_pattern = 'cross{crossprob,[0-9]+(|.[0-9]+)}-mut{mutprob,[0-9]+(.[0-9]+)}'
 ea_pattern = 'results_cgp/cgp-' + kab_pattern + '-' + ea_sizes_pattern + '-' + ea_probs_pattern + '-tour{toursize,[0-9]+(|.[0-9]+)}-rand{seed,(|-)[0-9]+}-fitness_{fitness,(' + list_regex(fitnesses) + ')}'
-
 
 #
 # group parameters with list-defining functions
@@ -113,16 +118,39 @@ rule download_sasc :
    mkdir -p softwares
    cd softwares
    git clone https://github.com/sciccolella/sasc.git '''
-	
+
 rule install_sasc :
 	input : expand('softwares/sasc/{file}.c', file = sasc_files)
 	params :
 		std = 'gnu99',
 		debug = '-g'
+
 	output : _sasc_
 	message : 'installing sasc ...'
 	shell : 'gcc -o {output} {input} -std={params.std} {params.debug} -lm'
 
+#
+# run ilp single cell
+#----------------------------------------------------------------------
+rule run_gpps :
+	input :
+		prgm = _gpps_,
+		matrix = '{file}.txt'
+
+	output : '{file}.txt.' + gpps_pattern + '/.out',
+	log :
+		dir = '{file}.txt.' + gpps_pattern + '/',
+		log = '{file}.txt.' + gpps_pattern + '/log',
+		time = '{file}.txt.' + gpps_pattern + '/time'
+
+	shell : '''
+
+   ulimit -Sv {memlimit}
+   {time} -v -o {log.time} \
+      python2 {input.prgm} -f {input.matrix} \
+         -k {wildcards.kappa} -a {wildcards.alpha} -b {wildcards.beta} \
+         -t {wildcards.cutofftime} -o {log.dir} > {log.log} 2>&1
+   touch {output} '''
 
 #
 # run cancer ea
