@@ -24,6 +24,7 @@ files = ['sim1_scs.in']
 kappas = [1] #[0]
 alphas = [0.05] #[0.1, 0.15]
 betas = [0.001] #[0.0001, 0.00001]
+test_name = '../single_cell_data/simulations/m_20-n_30-k_0-fn_0.2-fp_0.0001/sim10_scs'
 
 popsizes = [100, 150, 200]
 maxgens = [1000, 2000]
@@ -92,6 +93,13 @@ rule master :
 			toursize = 3.5,
 			seed = -1,
 			fitness = fitnesses)
+
+# santiy check
+rule test :
+	input :
+		expand('{filename}.txt.results_gpps-{kab}-cutoff60/.out',
+			filename = [test_name],
+			kab = kabs([1], [0.05], [0.001]))
 
 #
 # install the softwares
