@@ -19,7 +19,7 @@ from outputs import *
 #==================================================================#
 
 #--------------------------Parse Arguments-------------------------#
-parser = argparse.ArgumentParser(description='gppl', add_help=True)
+parser = argparse.ArgumentParser(description='gpps', add_help=True)
 
 parser.add_argument('-f', '--file', action='store', type=str, required=True,
                     help='path of the input file.')

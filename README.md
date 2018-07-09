@@ -118,14 +118,14 @@ the root directory, (as default).
 Exporting the model in MPS format
 ---------------------------------
 It is also possible to export the ILP model to the standard MPS format using the `--mps` argument.
-With this flag *gppl* will output the model in MPS format that can be fed to any other Solver that support it,
+With this flag *gpps* will output the model in MPS format that can be fed to any other Solver that support it,
 like CPLEX, Google OR-Tools, etc.
 
 Use on Single Cell Sequencing Data
 -----------------------------------
-We provide here another tool, called *gppl*, similar to the previous one, 
+We provide here another tool, called *gpps*, similar to the previous one, 
 that can be used to infer cancer progressions from single cell data.
-Differently from the previous tool, *gppl* employs a maximum likelihood search
+Differently from the previous tool, *gpps* employs a maximum likelihood search
 to find the best tree that explain the input, starting from single cell data.
 
 The tool can be run with the following arguments:
