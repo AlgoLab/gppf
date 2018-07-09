@@ -101,7 +101,7 @@ histories.
 However, some recent studies leveraging Single Cell Sequencing (SCS) techniques have shown
 evidence of mutation losses in several tumor samples~\cite{Kuipers13102017}, making the inference problem harder.\\
 \textbf{Results:}
-We present a new tool, \texttt{gpps}, that uses reconstructs a tumor phylogeny from single
+We present a new tool, \texttt{gpps}, that reconstructs a tumor phylogeny from single
 cell data, allowing each mutation to be lost at most a fixed number of times.\\
 \textbf{Availability:} The General Parsimony Phylogeny from Single cell (\texttt{gpps})
 tool is open source and available at   \url{https://github.com/AlgoLab/gppf}.\\
@@ -116,7 +116,7 @@ Moreover, studying the evolutionary history of tumors can provide some insights 
 mutations lead to drug resistance.
 
 The most widely studied techniques for inferring cancer progression rely on data from next-generation bulk sequencing experiments.
-In this cases, we sample mixtures of cells that are not homogeneous from a mutational
+In these cases, we sample mixtures of cells that are not homogeneous from a mutational
 profile (\ie which mutations appear in a cell) point of view.
 Moreover, we cannot easily distinguish between cells: the only information we can have is,
 for each mutation, the fraction of cells in a sample carrying such mutation.
@@ -124,7 +124,7 @@ Recently, many computational approaches have been developed for the analysis of
 bulk-sequencing data with the purpose of inferring tumoral subclonal decomposition and
 reconstructing tumor phylogenies
 (trees)~\cite{Strino2013,Jiao2014,Hajirasouliha2014,Yuan2015,Popic2015,citup,El-Kebir2016,marass2016,doi:10.1093/bioinformatics/btx270,Bonizzoni:2017:BPP:3107411.3107441},
-but almost all of them see a tumor progression as the accumulation of mutations under the
+but almost all of them model a tumor progression as the accumulation of mutations under the
 Infinite Sites Assumption, that is recurrent mutations and mutation losses are not allowed.
 
 
@@ -135,7 +135,7 @@ produces datasets with a high amount of noise that include allelic dropout (fals
 negatives) and missing values, due to lack of read coverage, as well as false positive
 calls -- although this event is much rarer.
 Another source of noise is due to doublets, that is signals originating from two separate
-cells are erroneously though to arrive from a single cell: we point out this latter
+cells which are erroneously inferred to originate from a single cell: we point out this latter
 problem is fading away and can be tackled computationally.
 Still, we need efficient methods that are able to cope with the kind of data that SCS
 techniques are currently producing, by taming the difficulties due to the noise in data.
@@ -147,7 +147,7 @@ As stated before, most of these methods rely on the Infinite Sites Assumption (I
 states that a mutation is acquired at most once in the phylogeny and is never lost. The
 ISA was introduced in~\cite{Kimura1969}.
 This simplifying assumption also leads to a computationally tractable model of
-evolution~\cite{gusfield1991} called perfect phylogeny.
+evolution~\cite{gusfield1991} called the perfect phylogeny.
 Cancer progression, however, is a very fast and aggressive form of evolution with limited data supporting neutral evolution~\cite{DAVIS2017151}, with some studies showing rather the evidence of selection~\cite{Bignell2010,DAVIS2017151} -- something that is particularly true in tumour samples after a relapse~\cite{Ding2012,Gillies2012,DAVIS2017151}, where the tumour has already been highly selected by the therapy targeted to destroy it.
 %\
 Thus, one would be expect that we must abandon the strict Infinite Sites Assumption in
@@ -160,17 +160,20 @@ provide a selective growth advantage. Each (independent) deletion of an acquired
 takes us further away from the ISA. Some recent methods such as
 TRaIT~\cite{Ramazzotti132183} and SiFit~\cite{Zafar2017}  allow deletions of mutations.
 
-The Dollo model~\cite{Rogozin2006} of evolution is designed exactly for some of the cases
-where a perfect phylogeny does not represent the actual data.
-More precisely, the Dollo model requires each mutation to be acquired exactly once in the
-entire history analyzed, while removing all restriction on the number of times that a
-mutation can be lost.
-The Dollo model as well as the Dollo($k$) variants, where each mutation can be lost at
-most $k$ times, has been recently introduced recently in the literature on algorithmic
-approaches for tumor progression inference~\cite{Bonizzoni:2017:BPP:3107411.3107441,SASC}.
-Unfortunately, the Dollo model does not have the convenient computational tractability of
-the perfect phylogeny model~\cite{gusfield1991}, hence requiring more sophisticated
-algorithms,
+The Dollo model~\cite{Rogozin2006} of evolution is designed exactly
+for some of the cases where a perfect phylogeny does not represent the
+actual data.  More precisely, the Dollo model requires each mutation
+to be acquired exactly once in the entire history analyzed, while
+removing all restrictions on the number of times that a mutation can
+be lost.  The Dollo model as well as the Dollo($k$) variants, where
+each mutation can be lost at most $k$ times, has been introduced
+recently in the literature on algorithmic approaches for tumor
+progression
+inference~\cite{Bonizzoni:2017:BPP:3107411.3107441,Ciccolella268243}.
+Unfortunately, the Dollo model does not have the convenient
+computational tractability of the perfect phylogeny
+model~\cite{gusfield1991}, hence requiring more sophisticated
+algorithms.
 
 In this paper we propose (\texttt{ggpl}), a tool of the \texttt{ggpf} family, that
 exploits an Integer Linear Programming (ILP) approach to infer a tumor progression that
