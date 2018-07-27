@@ -47,7 +47,7 @@ rs = [1]
 def list_regex(a) :
 	return '|'.join([x for x in a])
 
-kab_pattern = 'k{kappa,[0-9]+}-a{alpha,[0-9]+(|.[0-9]+)}-b{beta,[0-9]+(|.[0-9]+)}'
+kab_pattern = 'k{kappa,[0-9]+}-a{alpha,[0-9]+(|.[0-9]+)}-b{beta,[0-9]+(|.[0-9]+|.[0-9]+e-[0-9]+)}'
 
 # ilp
 gpps_pattern = 'results_gpps-' + kab_pattern + '-cutoff{cutofftime,[0-9]+}'
@@ -94,6 +94,12 @@ rule master :
 		expand('{filename}.txt.results_gpps-{kab}-cutoff{cutofftime}/.out',
 			filename = exp2_names,
 			kab = kabs([2], [0.1], [0.0001]),
+			cutofftime = cutofftimes),
+		expand('data/wang.txt.results_gpps-{kab}-cutoff{cutofftime}/.out',
+			kab = kabs([1], [0.0973], [0.0000124]),
+			cutofftime = cutofftimes),
+		expand('data/hou.txt.results_gpps-{kab}-cutoff{cutofftime}/.out',
+			kab = kabs([1], [0.0763], [0.000202]),
 			cutofftime = cutofftimes),
 
 # run cancer ea
