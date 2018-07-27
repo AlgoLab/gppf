@@ -5,3 +5,5 @@ input used for experiments:
 
 . exp2-sim{1..20}_scs.txt : are from data/simulated/exp2 of the same
   repository/as-of-commit as above
+
+. wang.txt and hou.txt : are real datasets from ???
